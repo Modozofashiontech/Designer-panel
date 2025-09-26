@@ -3,7 +3,6 @@ import Header from './Header';
 import axios from 'axios';
 import Tesseract from 'tesseract.js';
 import pantoneColors from '../utils/pantoneColors.json';
-import { API_BASE } from '../config';
 
 const PantoneLibrary = () => {
   // common header state
@@ -22,7 +21,7 @@ const PantoneLibrary = () => {
   const [fileDetails, setFileDetails] = useState([]);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const fileInputRef = useRef(null);
-  const API_BASE_URL = `${API_BASE}/api`;
+  const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000/api`;
   const [uploadedPantoneLibraries, setUploadedPantoneLibraries] = useState([]);
   const [selectedLibrary, setSelectedLibrary] = useState(null);
   const [showUploadForm, setShowUploadForm] = useState(false);

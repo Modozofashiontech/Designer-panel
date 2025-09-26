@@ -8,7 +8,6 @@ import * as pdfjsLib from 'pdfjs-dist';
 import AiHelpBot from './AiHelpBot';
 import axios from 'axios';
 import ManagerCard from './ManagerCard';
-import { PYTHON_BASE_URL, AWS_REGION } from '../config';
 
 // Set worker path for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;

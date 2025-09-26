@@ -19,7 +19,7 @@ import {
 const LineSheetDetails = () => {
   const navigate = useNavigate();
   const { managerId } = useParams();
-  const API_BASE_URL = `${API_BASE}/api`;
+  const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000/api`;
   const { updatePDFStatus } = useSharedPDFs();
   const [uploadedSheets, setUploadedSheets] = useState([]);
   const [selectedHeaderSeason, setSelectedHeaderSeason] = useState('SS 25');
