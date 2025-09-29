@@ -515,8 +515,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from the public directory
-app.use(express.static(path.join(__dirname, '../public')));
+// Security: block access to dotfiles (e.g., .env) anywhere
+app.use((req, res, next) => {
+  const requestedPath = req.path || '';
+  if (/\/(?:\.|%2e)/i.test(requestedPath) || requestedPath.startsWith('/.')) {
+    return res.status(404).end();
+  }
+  next();
+});
+
+// Serve static files from the public directory (dotfiles not served by default)
+app.use(express.static(path.join(__dirname, '../public'), { dotfiles: 'ignore' }));
 
 // Configure CORS for all routes
 app.use(cors({
