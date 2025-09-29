@@ -449,301 +449,102 @@ const PreProduction = () => {
   if (selectedManager && managerRecords.length > 0) {
     return (
       <>
-    <div className="bg-white p-8 rounded-lg shadow-sm min-h-[60vh]">
         <Header />
-        <div className="flex items-center text-sm text-gray-500 mb-2">
-                <span onClick={() => { setSelectedManager(null); setSelectedRecord(null); setIsImageModalOpen(false); setModalImageSrc(null); }} className="cursor-pointer hover:text-blue-600">All Sourcing managers</span>
-                <span className="mx-1">/</span>
-                <span className="font-semibold text-gray-700">{selectedManager} Sourcing Manager</span>
-              </div>
-              <div className='mb-4'>
-                <h1 className="text-3xl font-bold">PreProduction</h1>
-              </div>
+        <div className="h-screen flex flex-col">
+          <div className="flex-none bg-white border-b border-gray-200"></div>
+          <div className="flex-1 overflow-auto bg-gray-50 p-6">
+            <div className="flex items-center text-sm text-gray-500 mb-2">
+              <button onClick={() => { setSelectedManager(null); setSelectedRecord(null); setIsImageModalOpen(false); setModalImageSrc(null); }} className="cursor-pointer hover:text-gray-700">All Sourcing managers</button>
+              <span className="mx-1">/</span>
+              <span className="font-semibold text-gray-700">{selectedManager}</span>
+            </div>
+            <div className="mb-6"><h1 className="text-3xl font-bold">Pre-Production</h1></div>
+            <div className="bg-white p-8 rounded-lg shadow-sm min-h-[60vh]">
               <div className="md:flex-row md:items-center md:justify-between mb-6 gap-4">
-                <div className="flex justify-between gap-4">
-                  <div className='flex items-center gap-2'>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search managers..."
-                      className="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    {searchTerm && (
-                      <button
-                        onClick={() => setSearchTerm('')}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        ✕
-                      </button>
-                    )}
+                <div className="flex justify-between gap-4 flex-wrap">
+                  <div className='flex items-center gap-4'>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                      </div>
+                      <input type="text" placeholder="Search Pre-Production Id.." className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    </div>
+                    <div className="relative">
+                      <select className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value={sortConfig.key} onChange={(e) => setSortConfig({ ...sortConfig, key: e.target.value })}>
+                        <option value="manager">Sort by Manager</option>
+                        <option value="count">Sort by Count</option>
+                        <option value="lastDate">Sort by Date</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"><svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg></div>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <select
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={sortConfig.key}
-                      onChange={(e) => setSortConfig({ ...sortConfig, key: e.target.value })}
-                    >
-                      <option value="manager">SORT</option>
-                      <option value="count">Count</option>
-                      <option value="lastDate">Date</option>
-                    </select>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <button className="p-2 rounded-md border border-gray-200 bg-yellow-400/70 hover:bg-yellow-400" title="Grid View" type="button"><svg className="w-5 h-5 text-gray-700" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 6v-6h6v6h-6z"/></svg></button>
+                    <button className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-md bg-white text-blue-700 font-medium hover:bg-blue-50" onClick={openCommentsSidebar} type="button"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10a2 2 0 012-2h2M15 3h-4a2 2 0 00-2 2v3a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2z" /></svg>View Comments</button>
                   </div>
-                  </div>
-                  <button
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md bg-white text-blue-700 font-medium hover:bg-blue-50 whitespace-nowrap"
-                    onClick={openCommentsSidebar}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10a2 2 0 012-2h2M15 3h-4a2 2 0 00-2 2v3a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2z" />
-                    </svg>
-                    View Comments
-                  </button>
                 </div>
               </div>
-
-        <div className="flex gap-6">
-          {/* Left: List of Pre-Production samples for the selected manager */}
-      <div className="w-full md:w-64 bg-gray-50 rounded-lg p-2 flex flex-col gap-1 border border-gray-100 max-h-[60vh] overflow-y-auto">
-            {getSortedAndFilteredManagerGroups()
-              .filter(group => {
-                // If no manager is selected, show all groups
-                if (!selectedManager) return true;
-                // Otherwise, only show groups for the selected manager
-                const rec = group.items ? group.items[0] : group;
-                return rec.manager === selectedManager;
-              })
-              .map((group, idx) => {
-                const rec = group.items ? group.items[0] : group; // Handle both grouped and single record formats
-                return (
-                  <div
-                    key={rec._id || idx}
-                    className={`text-left px-4 py-2 rounded-md font-mono text-sm ${selectedRecord && selectedRecord._id === rec._id ? 'bg-blue-100 font-bold' : 'hover:bg-blue-50 cursor-pointer'}`}
-                    onClick={() => setSelectedRecord(rec)}
-                  >
-                    {rec.preProductionNumber || 'Pre-Production'}
-                    {rec.selectedTechpack && (
-                      <div className="text-xs text-gray-500 truncate">
-                        {techpacks.find(tp => tp._id === rec.selectedTechpack)?.name || rec.selectedTechpack}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-          </div>
-
-          {/* Center & Right: Details, Files, and Comments */}
-          {selectedRecord && (
-            <div className="flex-1 flex gap-6">
-              {/* Details Section */}
-              <div className="flex-1 bg-white rounded-lg p-6 border border-gray-100 flex flex-col gap-2 min-w-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-xl font-bold font-mono">{selectedRecord.preProductionNumber || 'Pre-Production'}</div>
-                    <div className="flex gap-2">
-                      <button className="border px-3 py-1 rounded text-blue-700 border-blue-200 hover:bg-blue-50">View History</button>
-                      
-                    </div>
-                  </div>
-                <div className="flex gap-6 mb-4">
-                  <button
-                    className={`font-semibold pb-1 border-b-2 ${selectedTab === 'preproduction' ? 'border-blue-600 text-blue-800' : 'border-transparent text-gray-400'}`}
-                    onClick={() => setSelectedTab('preproduction')}
-                  >
-                    Pre-Production Details
-                  </button>
-                  <button
-                    className={`font-semibold pb-1 border-b-2 ${selectedTab === 'techpack' ? 'border-blue-600 text-blue-800' : 'border-transparent text-gray-400'}`}
-                    onClick={() => setSelectedTab('techpack')}
-                    disabled={!selectedRecord.selectedTechpack}
-                  >
-                    Techpack Details
-                  </button>
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="w-full md:w-72 bg-white rounded-lg p-0 flex flex-col gap-0 border border-gray-200 max-h-[60vh] overflow-y-auto">
+                  {getSortedAndFilteredManagerGroups()
+                    .filter(group => { if (!selectedManager) return true; const rec = group.items ? group.items[0] : group; return rec.manager === selectedManager; })
+                    .map((group, idx) => { const rec = group.items ? group.items[0] : group; const isActive = selectedRecord && selectedRecord._id === rec._id; const techName = rec.selectedTechpack ? (techpacks.find(tp => tp._id === rec.selectedTechpack)?.name || rec.selectedTechpack) : null; return (
+                      <button key={rec._id || idx} className={`text-left px-4 py-3 text-sm flex flex-col border-l-4 ${isActive ? 'bg-blue-50 border-blue-600 font-semibold' : 'hover:bg-gray-50 border-transparent'} transition-colors`} onClick={() => setSelectedRecord(rec)} type="button">
+                        <span className="truncate font-mono">{rec.preProductionNumber || 'Pre-Production'}</span>
+                        {techName && <span className="text-xs text-gray-500 truncate">{techName}</span>}
+                      </button>
+                    );})}
                 </div>
-                
-                {selectedTab === 'preproduction' ? (
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2"><span className="text-gray-400">Pre-Production ID</span><span className="font-mono">{selectedRecord._id}</span></div>
-                      <div className="flex items-center gap-2"><span className="text-gray-400">Season</span><span>{selectedRecord.season}</span></div>
-                      <div className="flex items-center gap-2"><span className="text-gray-400">Status</span><span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded-full">Pending</span></div>
-                      <div className="flex items-center gap-2"><span className="text-gray-400">Submitted on</span><span>{new Date(selectedRecord.createdAt).toLocaleString()}</span></div>
-                      <div className="flex items-center gap-2"><span className="text-gray-400">Submitted to</span><span>{selectedRecord.manager} (Sourcing manager)</span></div>
+                {selectedRecord && (
+                  <div className="flex-1 bg-white rounded-lg p-6 border border-gray-100 flex flex-col gap-2 min-w-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3"><div className="text-xl font-bold font-mono">{selectedRecord.preProductionNumber || 'Pre-Production'}</div></div>
+                      <div className="flex gap-2"><button className="border px-3 py-1 rounded text-blue-700 border-blue-200 hover:bg-blue-50">View History</button></div>
                     </div>
-                  </div>
-                ) : (
-                  (() => {
-                    const techpack = getTechpackFor(selectedRecord.selectedTechpack);
-                    if (!techpack) return <div className="text-gray-400">No techpack details found.</div>;
-                    return (
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center gap-2"><span className="text-gray-400">Name</span><span>{techpack.name}</span></div>
-                          <div className="flex items-center gap-2"><span className="text-gray-400">Description</span><span>{techpack.description}</span></div>
-                          <div className="flex items-center gap-2"><span className="text-gray-400">Article Type</span><span>{techpack.articletype}</span></div>
-                          <div className="flex items-center gap-2"><span className="text-gray-400">Colour</span><span>{techpack.colour}</span></div>
-                          <div className="flex items-center gap-2"><span className="text-gray-400">Fit</span><span>{techpack.fit}</span></div>
-                          <div className="flex items-center gap-2"><span className="text-gray-400">Gender</span><span>{techpack.gender}</span></div>
-                          <div className="flex items-center gap-2"><span className="text-gray-400">Print Technique</span><span>{techpack.printtechnique}</span></div>
+                    <div className="flex gap-6 mb-4 overflow-x-auto">
+                      <button className={`font-semibold pb-1 ${selectedTab === 'preproduction' ? 'border-b-2 border-blue-600' : 'text-gray-400'}`} onClick={() => setSelectedTab('preproduction')}>Pre-Production Details</button>
+                      <button className={`font-semibold pb-1 ${selectedTab === 'techpack' ? 'border-b-2 border-blue-600' : 'text-gray-400'}`} onClick={() => setSelectedTab('techpack')} disabled={!selectedRecord.selectedTechpack}>Tech pack Details</button>
+                    </div>
+                    {selectedTab === 'preproduction' ? (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm">
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center gap-2"><span className="text-gray-400">Pre-Production ID</span><span className="font-mono">{selectedRecord._id}</span></div>
+                          <div className="flex items-center gap-2"><span className="text-gray-400">Season</span><span>{selectedRecord.season}</span></div>
+                          <div className="flex items-center gap-2"><span className="text-gray-400">Status</span><span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded-full">Pending</span></div>
+                          <div className="flex items-center gap-2"><span className="text-gray-400">Submitted on</span><span>{new Date(selectedRecord.createdAt).toLocaleString()}</span></div>
+                          <div className="flex items-center gap-2"><span className="text-gray-400">Submitted to</span><span>{selectedRecord.manager} (Sourcing manager)</span></div>
+                        </div>
+                        <div className="flex flex-col gap-3 w-full">
+                          <div className="flex items-center justify-between"><div className="font-semibold">Lab Dips</div><div className="flex items-center gap-2 text-gray-500"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553 4.553a1 1 0 01-1.414 1.414L13.586 11.9M10 14a4 4 0 100-8 4 4 0 000 8z"/></svg><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553 4.553a1 1 0 01-1.414 1.414L13.586 11.9M10 14a4 4 0 100-8 4 4 0 000 8z"/></svg></div></div>
+                          <div className="w-full min-h-[18rem] rounded border border-gray-200 bg-gray-50 p-2 flex items-center justify-center">
+                            {(() => { const fileKey = selectedRecord?.file?.key; const imgSrc = fileKey ? `${API_BASE}/api/file/${encodeURIComponent(fileKey)}` : null; if (!imgSrc) return <div className="w-full h-64 flex items-center justify-center text-gray-400">No files uploaded</div>; return (<div className="w-full cursor-pointer" onClick={() => { setModalImageSrc(imgSrc); setIsImageModalOpen(true); setImageLoading(true); }}><img src={imgSrc} alt="Pre-Production" className="max-w-full max-h-72 object-contain rounded" /><div className="text-xs text-center text-gray-500 mt-1">Click to view full screen</div></div>); })()}
+                          </div>
+                          <div className="w-full mt-2">
+                            <h4 className="font-medium mb-2">Comments</h4>
+                            <div className="space-y-4 mb-2 max-h-[300px] overflow-y-auto">
+                              {selectedRecord.comments && selectedRecord.comments.length > 0 ? (
+                                sortCommentsByDate(selectedRecord.comments).map(comment => (
+                                  <div key={comment._id || `temp-${comment.text}`} className={`text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0 ${comment.isOptimistic ? 'opacity-70' : ''}`}>
+                                    <div className="flex justify-between items-center mb-1"><p className="font-semibold">{comment.user || 'Unknown User'}</p><p className="text-xs text-gray-500">{comment.createdAt ? new Date(comment.createdAt).toLocaleString() : 'Just now'}{comment.isOptimistic && ' (saving...)'}</p></div>
+                                    <p className="text-gray-700 break-words">{comment.text}</p>
+                                  </div>
+                                ))
+                              ) : (<p className="text-gray-500 text-sm italic">No comments yet. Be the first to comment!</p>)}
+                            </div>
+                            <div className="mt-2"><div className="flex items-center gap-2"><input type="text" placeholder="Add a comment..." className="flex-grow border rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { handleAddComment(e.target.value.trim(), e.target); e.preventDefault(); } }} /><button className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm font-semibold hover:bg-blue-700" onClick={(e) => { const input = e.currentTarget.previousElementSibling; if (input.value.trim()) { handleAddComment(input.value.trim(), input); } }}>Send</button></div></div>
+                          </div>
                         </div>
                       </div>
-                    );
-                  })()
+                    ) : (
+                      (() => { const techpack = getTechpackFor(selectedRecord.selectedTechpack); if (!techpack) return <div className="text-gray-400">No techpack details found.</div>; return (<div className="w-full"><div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"><div className="flex flex-col gap-2"><div className="flex items-center gap-2"><span className="text-gray-400">Name</span><span>{techpack.name}</span></div><div className="flex items-center gap-2"><span className="text-gray-400">Description</span><span>{techpack.description}</span></div><div className="flex items-center gap-2"><span className="text-gray-400">Article Type</span><span>{techpack.articletype}</span></div><div className="flex items-center gap-2"><span className="text-gray-400">Colour</span><span>{techpack.colour}</span></div><div className="flex items-center gap-2"><span className="text-gray-400">Fit</span><span>{techpack.fit}</span></div><div className="flex items-center gap-2"><span className="text-gray-400">Gender</span><span>{techpack.gender}</span></div><div className="flex items-center gap-2"><span className="text-gray-400">Print Technique</span><span>{techpack.printtechnique}</span></div></div><div className="mt-2 md:mt-0">{techpack.pdfUrl ? (<div className="border rounded overflow-hidden"><iframe src={techpack.pdfUrl} title="Techpack PDF" className="w-full h-96 border-0" /></div>) : techpack.previewUrl ? (<img src={techpack.previewUrl} alt={techpack.name || 'Techpack preview'} className="w-full h-96 object-cover rounded" />) : (<div className="text-gray-400">No preview available</div>)}<div className="mt-4"><h4 className="font-medium mb-2">Comments</h4><CommentSection recordId={selectedRecord._id} file={selectedRecord} endpoint="preproduction" /></div></div></div></div>); })()
+                    )}
+                  </div>
                 )}
               </div>
-
-              {/* Right Column: Files and Comments */}
-              <div className="w-full sm:w-96 flex flex-col gap-6">
-                {/* Files Section */}
-                <div className="bg-white rounded-lg p-6 border border-gray-100">
-                  <h3 className="font-semibold text-lg mb-4">Files</h3>
-                  {selectedTab === 'techpack' ? (
-                    (() => {
-                      const techpack = getTechpackFor(selectedRecord.selectedTechpack);
-                      if (!techpack) return <div className="text-gray-400 text-center py-10">Loading techpack...</div>;
-
-                      // Build best available URL
-                      const fileObj = techpack.file;
-                      const urlFromFile = (fileObj && fileObj.key) ? `${API_BASE}/api/file/${encodeURIComponent(fileObj.key)}` : null;
-                      const urlFromKey = techpack.s3Key ? `${API_BASE}/api/file/${encodeURIComponent(techpack.s3Key)}` : null;
-                      const presigned = typeof techpack.pdfUrl === 'string' ? techpack.pdfUrl : null;
-                      const preview = typeof techpack.previewUrl === 'string' ? techpack.previewUrl : null;
-                      const chosenUrl = presigned || urlFromFile || urlFromKey || preview;
-
-                      if (!chosenUrl) {
-                        return <div className="text-gray-400 text-center py-10">No techpack file available</div>;
-                      }
-
-                      // Decide if it looks like a PDF
-                      const isPdf = (
-                        (fileObj?.type === 'application/pdf') ||
-                        (fileObj?.key?.toLowerCase().endsWith('.pdf')) ||
-                        (techpack.s3Key?.toLowerCase().endsWith('.pdf')) ||
-                        (chosenUrl.toLowerCase().includes('.pdf'))
-                      );
-
-                      return isPdf ? (
-                        <div className="mb-4">
-                          <div className="border rounded overflow-hidden">
-                            <iframe
-                              src={chosenUrl}
-                              title="Techpack PDF"
-                              className="w-full h-80 border-0"
-                            />
-                          </div>
-                          <div className="text-xs text-center text-gray-500 mt-2">
-                            Having trouble viewing the PDF?{' '}
-                            <a href={chosenUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Open in new tab</a>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mb-4">
-                          <img
-                            src={chosenUrl}
-                            alt={techpack.name || 'Techpack preview'}
-                            className="w-full h-64 object-contain border rounded cursor-pointer"
-                            onClick={() => {
-                              setModalImageSrc(chosenUrl);
-                              setIsImageModalOpen(true);
-                              setImageLoading(true);
-                            }}
-                          />
-                          <div className="text-xs text-center text-gray-500 mt-1">Techpack Image</div>
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    (() => {
-                      const fileKey = selectedRecord?.file?.key;
-                      const imgSrc = fileKey ? `${API_BASE}/api/file/${encodeURIComponent(fileKey)}` : null;
-                      if (!imgSrc) return <div className="text-gray-400 text-center py-10">No files uploaded</div>;
-                      return (
-                        <div className="mb-4">
-                          <img
-                            src={imgSrc}
-                            alt="Pre-Production Sample"
-                            className="w-full h-64 object-contain border rounded cursor-pointer"
-                            onClick={() => {
-                              setModalImageSrc(imgSrc);
-                              setIsImageModalOpen(true);
-                              setImageLoading(true);
-                            }}
-                          />
-                          <div className="text-xs text-center text-gray-500 mt-1">Pre-Production Image</div>
-                        </div>
-                      );
-                    })()
-                  )}
-                </div>
-
-                {/* Comments Section */}
-                <div className="bg-white rounded-lg p-6 border border-gray-100">
-                  <h3 className="font-semibold text-lg mb-4">Comments</h3>
-                  <div className="space-y-4 mb-4 min-h-[60px] max-h-[300px] overflow-y-auto">
-                    {selectedRecord.comments && selectedRecord.comments.length > 0 ? (
-                      sortCommentsByDate(selectedRecord.comments).map(comment => (
-                        <div 
-                          key={comment._id || `temp-${comment.text}`} 
-                          className={`text-sm border-b border-gray-100 pb-3 last:border-0 last:pb-0 ${comment.isOptimistic ? 'opacity-70' : ''}`}
-                        >
-                          <div className="flex justify-between items-center mb-1">
-                            <p className="font-semibold">{comment.user || 'Unknown User'}</p>
-                            <p className="text-xs text-gray-500">
-                              {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : 'Just now'}
-                              {comment.isOptimistic && ' (saving...)'}
-                            </p>
-                          </div>
-                          <p className="text-gray-700 break-words">{comment.text}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-gray-500 text-sm italic">No comments yet. Be the first to comment!</p>
-                    )}
-                  </div>
-                  {/* Add comment form */}
-                  <div className="mt-4">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Add a comment..."
-                        className="flex-grow border rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && e.target.value.trim()) {
-                            handleAddComment(e.target.value.trim(), e.target);
-                            e.preventDefault();
-                          }
-                        }}
-                      />
-                      <button
-                        className="bg-blue-600 text-white rounded-md px-4 py-2 text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={(e) => {
-                          const input = e.currentTarget.previousElementSibling;
-                          if (input.value.trim()) {
-                            handleAddComment(input.value.trim(), input);
-                          }
-                        }}
-                      >
-                        Send
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
-      <ManagerCommentsSidebar
-          open={showCommentsSidebar}
-          onClose={() => setShowCommentsSidebar(false)}
-          manager={selectedManager || selectedRecord?.manager}
-          records={allRecords}
-          type="Pre-Production"
-          onRecordClick={(record) => {
-            setSelectedRecord(record);
-            setShowCommentsSidebar(false);
-          }}
-        />
+        <ManagerCommentsSidebar open={showCommentsSidebar} onClose={() => setShowCommentsSidebar(false)} manager={selectedManager || selectedRecord?.manager} records={allRecords} type="Pre-Production" onRecordClick={(record) => { setSelectedRecord(record); setShowCommentsSidebar(false); }} />
       </>
     );
   }
@@ -789,7 +590,7 @@ const PreProduction = () => {
           .map(m => (
             <div
               key={m.manager}
-              className="bg-white rounded-lg shadow p-6 border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow"
+              className="bg-white rounded-lg shadow p-6 w-80 border border-gray-200 cursor-pointer hover:shadow-lg"
               onClick={() => {
                 setSelectedManager(m.manager);
                 const records = allRecords.filter(r => r.manager === m.manager);
@@ -797,13 +598,15 @@ const PreProduction = () => {
                 setSelectedRecord(records[0]);
               }}
             >
-              <div className="flex items-center mb-2 justify-between">
-                <div className="flex items-center">
-                  <div className="bg-blue-100 p-2 rounded-lg mr-2">
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="24" height="24" rx="12" fill="#e0e7ff"/><path d="M8 7h8a1 1 0 011 1v8a1 1 0 01-1 1H8a1 1 0 01-1-1V8a1 1 0 011-1z" fill="#3b82f6"/></svg>
-                  </div>
-                  <div className="font-semibold text-lg">{m.manager} Sourcing Manager</div>
+              <div className="flex items-center mb-2">
+                <div className="bg-blue-100 p-2 rounded-lg mr-2">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <rect width="24" height="24" rx="12" fill="#e0e7ff"/>
+                    <rect x="7" y="7" width="10" height="10" rx="2" fill="#3b82f6"/>
+                    <rect x="9" y="9" width="6" height="6" rx="1" fill="#fff"/>
+                  </svg>
                 </div>
+                <div className="font-semibold text-lg">{m.manager} Sourcing Manager</div>
               </div>
               <div className="flex justify-between text-xs text-gray-500 mt-4">
                 <div>

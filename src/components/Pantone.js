@@ -432,17 +432,22 @@ const Pantone = () => {
         </div>
         <div className="flex-1 overflow-auto bg-gray-50 p-6">
           <div className="flex items-center text-sm text-gray-500 mb-2">
-            <span onClick={() => { setSelectedManager(null); setSelectedRecord(null); }} className="cursor-pointer">All Sourcing managers</span>
+            <button
+              onClick={() => { setSelectedManager(null); setSelectedRecord(null); }}
+              className="cursor-pointer hover:text-gray-700"
+            >
+              All Sourcing managers
+            </button>
             <span className="mx-1">/</span>
-            <span className="font-semibold text-gray-700">{selectedManager} Sourcing Manager</span>
+            <span className="font-semibold text-gray-700">{selectedManager}</span>
           </div>
           <div className="mb-6">
-            <h1 className="text-3xl font-bold">Pantone</h1>
+            <h1 className="text-3xl font-bold">Pantones</h1>
           </div>
           <div className="bg-white p-8 rounded-lg shadow-sm min-h-[60vh]">
             <div className="mb-6">
-              <div className=" md:flex-row md:items-center md:justify-between mb-4 gap-4">
-                <div className="flex justify-between gap-4">
+              <div className="md:flex-row md:items-center md:justify-between mb-4 gap-4">
+                <div className="flex justify-between gap-4 flex-wrap">
                   {/* Search Input */}
                   <div className="flex items-center gap-4">
                   <div className="relative">
@@ -454,7 +459,7 @@ const Pantone = () => {
                     <input
                       type="text"
                       className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="Search Pantone numbers..."
+                      placeholder="Search Pantone Id.."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -477,43 +482,65 @@ const Pantone = () => {
                     </div>
                   </div>
                   </div>
-                  {/* View Comments Button */}
-                  <button
-                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md bg-white text-blue-700 font-medium hover:bg-blue-50"
-                    onClick={() => setShowCommentsSidebar(true)}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10a2 2 0 012-2h2M15 3h-4a2 2 0 00-2 2v3a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2z" />
-                    </svg>
-                    View Comments
-                  </button>
+                  {/* Right side icon buttons */}
+                  <div className="flex items-center gap-2 ml-auto">
+                    <button
+                      className="p-2 rounded-md border border-gray-200 bg-yellow-400/70 hover:bg-yellow-400"
+                      title="Grid View"
+                      type="button"
+                    >
+                      <svg className="w-5 h-5 text-gray-700" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 6v-6h6v6h-6z"/></svg>
+                    </button>
+                    <button
+                      className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-md bg-white text-blue-700 font-medium hover:bg-blue-50"
+                      onClick={() => setShowCommentsSidebar(true)}
+                      type="button"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10a2 2 0 012-2h2M15 3h-4a2 2 0 00-2 2v3a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2z" />
+                      </svg>
+                      View Comments
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
             <div className="flex flex-col md:flex-row gap-6">
               {/* Left: List of Pantone Numbers */}
-              <div className="w-full md:w-64 bg-gray-50 rounded-lg p-2 flex flex-col gap-1 border border-gray-100 max-h-[60vh] overflow-y-auto">
-                {managerRecords.map((rec, idx) => (
-                  <button
-                    key={rec._id}
-                    className={`text-left px-4 py-2 rounded-md font-mono text-sm ${selectedRecord && selectedRecord._id === rec._id ? 'bg-blue-100 font-bold' : 'hover:bg-blue-50'}`}
-                    onClick={() => setSelectedRecord(rec)}
-                  >
-                    {rec.pantoneNumber}
-                  </button>
-                ))}
+              <div className="w-full md:w-72 bg-white rounded-lg p-0 flex flex-col gap-0 border border-gray-200 max-h-[60vh] overflow-y-auto">
+                {managerRecords.map((rec) => {
+                  const isActive = selectedRecord && selectedRecord._id === rec._id;
+                  return (
+                    <button
+                      key={rec._id}
+                      className={`text-left px-4 py-3 text-sm flex items-center justify-between border-l-4 ${isActive ? 'bg-blue-50 border-blue-600 font-semibold' : 'hover:bg-gray-50 border-transparent'} transition-colors`}
+                      onClick={() => setSelectedRecord(rec)}
+                      type="button"
+                    >
+                      <span className="truncate font-mono">{rec.pantoneNumber}</span>
+                      {rec.moreCount ? (
+                        <span className="text-xs text-gray-500 ml-2 whitespace-nowrap">+{rec.moreCount} more</span>
+                      ) : null}
+                    </button>
+                  );
+                })}
               </div>
               {/* Center: Details with Tabs */}
               {selectedRecord && (
                 <div className="flex-1 bg-white rounded-lg p-6 border border-gray-100 flex flex-col gap-2 min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-xl font-bold font-mono">{selectedRecord.pantoneNumber}</div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-xl font-bold font-mono">{selectedRecord.pantoneNumber}</div>
+                      {selectedRecord.moreCount ? (
+                        <span className="px-2 py-0.5 text-xs rounded-md bg-gray-100 border border-gray-200 text-gray-600">+{selectedRecord.moreCount} more</span>
+                      ) : null}
+                    </div>
                     <div className="flex gap-2">
                       <button className="border px-3 py-1 rounded text-blue-700 border-blue-200 hover:bg-blue-50">View History</button>
                       
                     </div>
                   </div>
-                  <div className="flex gap-6 mb-4">
+                  <div className="flex gap-6 mb-4 overflow-x-auto">
                     <button
                       className={`font-semibold pb-1 ${activeTab === 'pantone' ? 'border-b-2 border-blue-600' : 'text-gray-400'}`}
                       onClick={() => setActiveTab('pantone')}
@@ -521,11 +548,11 @@ const Pantone = () => {
                     <button
                       className={`font-semibold pb-1 ${activeTab === 'techpack' ? 'border-b-2 border-blue-600' : 'text-gray-400'}`}
                       onClick={() => setActiveTab('techpack')}
-                    >Techpack Details</button>
+                    >Tech pack Details</button>
                   </div>
                   {activeTab === 'pantone' && (
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex flex-col gap-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm">
+                      <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-2"><span className="text-gray-400">Pantone ID</span><span className="font-mono">{selectedRecord._id}</span></div>
                         <div className="flex items-center gap-2"><span className="text-gray-400">Vendor ID</span><span className="font-mono">X987654</span></div>
                         <div className="flex items-center gap-2"><span className="text-gray-400">Season</span><span>{selectedRecord.season}</span></div>
@@ -533,51 +560,48 @@ const Pantone = () => {
                         <div className="flex items-center gap-2"><span className="text-gray-400">Submitted on</span><span>{new Date(selectedRecord.createdAt).toLocaleString()}</span></div>
                         <div className="flex items-center gap-2"><span className="text-gray-400">Submitted to</span><span>{selectedRecord.manager} (Sourcing manager)</span></div>
                       </div>
-                      {/* Right: Files and Images */}
-                      <div className="flex flex-col gap-2 items-center w-full">
-                        <div className="font-semibold mb-2">Pantone Files</div>
-                        {selectedRecord.file ? (
-                          <div className="w-full flex justify-center">
-                            {selectedRecord.file.type === 'application/pdf' ? (
-                              <div className="w-full cursor-pointer" onClick={() => handleFilePreview(selectedRecord.file, `Pantone ${selectedRecord.pantoneNumber} PDF`)}>
-                                {pdfUrls[selectedRecord._id] ? (
+                      {/* Right: Lab Dips panel with preview inside */}
+                      <div className="flex flex-col gap-3 w-full">
+                        <div className="flex items-center justify-between">
+                          <div className="font-semibold">Lab Dips</div>
+                          <div className="flex items-center gap-2 text-gray-500">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553 4.553a1 1 0 01-1.414 1.414L13.586 11.9M10 14a4 4 0 100-8 4 4 0 000 8z"/></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553 4.553a1 1 0 01-1.414 1.414L13.586 11.9M10 14a4 4 0 100-8 4 4 0 000 8z"/></svg>
+                          </div>
+                        </div>
+                        <div className="w-full min-h-[18rem] rounded border border-gray-200 bg-gray-50 p-2 flex items-center justify-center">
+                          {selectedRecord.file ? (
+                            <div className="w-full cursor-pointer" onClick={() => handleFilePreview(selectedRecord.file, `Pantone ${selectedRecord.pantoneNumber} ${selectedRecord.file.type === 'application/pdf' ? 'PDF' : 'Image'}`)}>
+                              {selectedRecord.file.type === 'application/pdf' ? (
+                                pdfUrls[selectedRecord._id] ? (
                                   <iframe
                                     src={`${window.location.origin}/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrls[selectedRecord._id])}`}
-                                    className="w-full h-96 border rounded"
+                                    className="w-full h-72 border-0 rounded"
                                     title="PDF Viewer"
                                   />
                                 ) : (
-                                  <div className="w-full h-96 flex items-center justify-center bg-gray-100 rounded border border-gray-200">
-                                    <span className="text-gray-500">Loading PDF...</span>
-                                  </div>
-                                )}
-                                <div className="text-xs text-center text-gray-500 mt-1">Pantone PDF (Click to view full screen)</div>
-                              </div>
-                            ) : selectedRecord.file.type?.startsWith('image/') ? (
-                              <div className="w-full cursor-pointer" onClick={() => handleFilePreview(selectedRecord.file, `Pantone ${selectedRecord.pantoneNumber} Image`)}>
+                                  <div className="w-full h-72 flex items-center justify-center text-gray-500">Loading PDF...</div>
+                                )
+                              ) : selectedRecord.file.type?.startsWith('image/') ? (
                                 <img
                                   src={getFileUrl(selectedRecord.file)}
                                   alt={`Pantone ${selectedRecord.pantoneNumber}`}
-                                  className="max-w-full max-h-96 object-contain border rounded hover:opacity-90 transition-opacity"
+                                  className="max-w-full max-h-72 object-contain rounded"
                                   onError={(e) => {
                                     console.error('Error loading image:', e.target.src);
                                   }}
                                 />
-                                <div className="text-xs text-center text-gray-500 mt-1">Pantone Image (Click to view full screen)</div>
-                              </div>
-                            ) : (
-                              <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded border border-gray-200">
-                                <span className="text-gray-400">Unsupported file type</span>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded border border-gray-200">
-                            <span className="text-gray-400">No files available</span>
-                          </div>
-                        )}
+                              ) : (
+                                <div className="w-full h-64 flex items-center justify-center text-gray-400">Unsupported file type</div>
+                              )}
+                              <div className="text-xs text-center text-gray-500 mt-1">Click to view full screen</div>
+                            </div>
+                          ) : (
+                            <div className="w-full h-64 flex items-center justify-center text-gray-400">No files available</div>
+                          )}
+                        </div>
                         {/* Comments Section */}
-                        <div className="w-full mt-4">
+                        <div className="w-full mt-2">
                           <h4 className="font-medium mb-2">Comments</h4>
                           <CommentSection
                             recordId={selectedRecord._id}
