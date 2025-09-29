@@ -1018,7 +1018,7 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                       const url = getBestPdfUrl(detailFile);
                       if (url) {
                         return (
-                          <iframe src={pdfIframeSrc(url)} title={`PDF ${detailFile.name || ''}`} className="w-full h-[520px] border-0" />
+                          <iframe src={url} title={`PDF ${detailFile.name || ''}`} className="w-full h-[520px] border-0" />
                         );
                       }
                       return (
