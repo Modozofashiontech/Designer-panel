@@ -51,10 +51,20 @@ const CommentSection = ({ recordId, file, onCommentSubmit, endpoint }) => {
       // Clear input
       setComment('');
       
-      // Submit to backend
-      await addCommentUtil(recordId, file._id, text, user, endpoint);
+      // Submit to backend and get the response
+      const response = await addCommentUtil(recordId, file._id, text, user, endpoint);
       
-      // The actual update will come through the socket.io update
+      // Handle server response directly
+      if (response && response.comment) {
+        // If we have a direct server response, update with it
+        if (onCommentSubmit) {
+          onCommentSubmit(recordId, file._id, {
+            ...response.comment,
+            isOptimistic: false
+          });
+        }
+      }
+      // The socket.io update will still work as a backup
       
     } catch (err) {
       console.error('Failed to submit comment:', err);

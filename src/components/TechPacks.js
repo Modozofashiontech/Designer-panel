@@ -51,6 +51,8 @@ const TechPacks = () => {
   // --- Manager Cards State ---
   const [managerGroups, setManagerGroups] = useState([]);
   const [selectedManager, setSelectedManager] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: 'count', direction: 'desc' });
 
   // Fetch tech packs from backend when component mounts (no pagination)
   useEffect(() => {
@@ -110,6 +112,57 @@ const TechPacks = () => {
   const brands = ['Myntra', 'H&M', 'Zara', 'Nike', 'Adidas', 'Puma', 'Levis', 'Tommy Hilfiger', 'Calvin Klein', 'Forever 21'];
 
   const { addSharedPDF } = useSharedPDFs();
+
+  // Handle sort request
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Get filtered and sorted manager groups
+  const getFilteredAndSortedManagerGroups = () => {
+    let filteredGroups = managerGroups;
+
+    // Filter by search term
+    if (searchTerm) {
+      filteredGroups = managerGroups.filter(group =>
+        group.manager.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Sort groups
+    return [...filteredGroups].sort((a, b) => {
+      if (sortConfig.key === 'count') {
+        if (sortConfig.direction === 'asc') {
+          return a.count - b.count;
+        } else {
+          return b.count - a.count;
+        }
+      }
+      if (sortConfig.key === 'manager') {
+        const aName = a.manager.toLowerCase();
+        const bName = b.manager.toLowerCase();
+        if (sortConfig.direction === 'asc') {
+          return aName.localeCompare(bName);
+        } else {
+          return bName.localeCompare(aName);
+        }
+      }
+      if (sortConfig.key === 'lastDate') {
+        const aDate = a.lastDate || '';
+        const bDate = b.lastDate || '';
+        if (sortConfig.direction === 'asc') {
+          return aDate.localeCompare(bDate);
+        } else {
+          return bDate.localeCompare(aDate);
+        }
+      }
+      return 0;
+    });
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -767,31 +820,66 @@ const TechPacks = () => {
           />
         ) : !selectedManager ? (
           managerGroups.length > 0 && (
-            <div className="flex flex-wrap gap-6 p-6 justify-start">
-              {managerGroups.map(m => (
-                <div
-                  key={m.manager}
-                  className="bg-white rounded-lg shadow p-6 w-80 border border-gray-200 cursor-pointer hover:shadow-lg"
-                  onClick={() => setSelectedManager(m.manager)}
-                >
-                  <div className="flex items-center mb-2">
-                    <div className="bg-blue-100 p-2 rounded-lg mr-2">
-                      <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="24" height="24" rx="12" fill="#e0e7ff"/><rect x="7" y="7" width="10" height="10" rx="2" fill="#3b82f6"/><rect x="9" y="9" width="6" height="6" rx="1" fill="#fff"/></svg>
-                    </div>
-                    <div className="font-semibold text-lg">{m.manager} Manager</div>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500 mt-4">
-                    <div>
-                      <div className="font-semibold text-gray-700">TECH PACKS</div>
-                      <div>{m.count}</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-700">SUBMITTED ON</div>
-                      <div>{m.lastDate || '-'}</div>
-                    </div>
+            <div className="p-6">
+              {/* Search and Sort Controls */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex-1 flex items-center bg-white rounded-md border border-gray-200 px-3 py-2">
+                  <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"></path>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search managers..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-1 outline-none bg-transparent"
+                  />
+                </div>
+                <div className="relative">
+                  <select
+                    className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    value={sortConfig.key}
+                    onChange={(e) => requestSort(e.target.value)}
+                  >
+                    <option value="count">Sort by Count</option>
+                    <option value="manager">Sort by Name</option>
+                    <option value="lastDate">Sort by Date</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Manager Cards */}
+              <div className="flex flex-wrap gap-6 justify-start">
+                {getFilteredAndSortedManagerGroups().map(m => (
+                  <div
+                    key={m.manager}
+                    className="bg-white rounded-lg shadow p-6 w-80 border border-gray-200 cursor-pointer hover:shadow-lg"
+                    onClick={() => setSelectedManager(m.manager)}
+                  >
+                    <div className="flex items-center mb-2">
+                      <div className="bg-blue-100 p-2 rounded-lg mr-2">
+                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="24" height="24" rx="12" fill="#e0e7ff"/><rect x="7" y="7" width="10" height="10" rx="2" fill="#3b82f6"/><rect x="9" y="9" width="6" height="6" rx="1" fill="#fff"/></svg>
+                      </div>
+                      <div className="font-semibold text-lg">{m.manager} Manager</div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-4">
+                      <div>
+                        <div className="font-semibold text-gray-700">TECH PACKS</div>
+                        <div>{m.count}</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-700">SUBMITTED ON</div>
+                        <div>{m.lastDate || '-'}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )
         ) : (

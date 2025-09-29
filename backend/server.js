@@ -511,6 +511,10 @@ const uploadToS3 = async (file, key) => {
 
 const app = express();
 
+// Parse JSON request bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -2749,7 +2753,7 @@ const getContentType = (key) => {
 
 // Serve files from S3 with proper content types and caching
 // This endpoint handles both /api/file/... and /file/... to prevent double /api issues
-app.get(['/api/file/:key(*)', '/file/:key(*)'], async (req, res) => {
+app.get('/api/file/:key(*)', async (req, res) => {
   try {
     const { key } = req.params;
     const { folder } = req.query;

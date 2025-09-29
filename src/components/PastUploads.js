@@ -595,9 +595,9 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
   return (
     <div className="flex flex-col h-full overflow-auto">
       {/* Search and Filter Bar */}
-      <div className="flex-none bg-white px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="w-full">
+      <div className="flex-none bg-white px-3 sm:px-6 py-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="w-full sm:w-auto">
             {/* Search */}
             <div className="w-full max-w-md relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -616,53 +616,58 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
           </div>
 
           {/* Filters and View Options */}
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             {/* Comments Button */}
             <button
               onClick={() => setShowCommentsSidebar(true)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 mr-2"
+              className="inline-flex items-center px-3 sm:px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               <FaComment className="mr-2" />
-              Comments
-            </button>
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              <svg className="h-5 w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              FILTER
-              {Object.values(selectedFilters).some(arr => arr.length > 0) && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {Object.values(selectedFilters).reduce((acc, arr) => acc + arr.length, 0)}
-                </span>
-              )}
+              <span className="hidden sm:inline">Comments</span>
             </button>
 
-            <button
-              onClick={() => setIsStatusOpen(!isStatusOpen)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              STATUS
-              <svg className="h-5 w-5 ml-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-              {selectedStatuses.length > 0 && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {selectedStatuses.length}
-                </span>
-              )}
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="inline-flex items-center px-3 sm:px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 flex-1 sm:flex-none"
+              >
+                <svg className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <span className="hidden sm:inline">FILTER</span>
+                <span className="sm:hidden">F</span>
+                {Object.values(selectedFilters).some(arr => arr.length > 0) && (
+                  <span className="ml-1 sm:ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {Object.values(selectedFilters).reduce((acc, arr) => acc + arr.length, 0)}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setIsStatusOpen(!isStatusOpen)}
+                className="inline-flex items-center px-3 sm:px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 flex-1 sm:flex-none"
+              >
+                <span className="hidden sm:inline">STATUS</span>
+                <span className="sm:hidden">S</span>
+                <svg className="h-4 w-4 sm:h-5 sm:w-5 ml-1 sm:ml-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+                {selectedStatuses.length > 0 && (
+                  <span className="ml-1 sm:ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {selectedStatuses.length}
+                  </span>
+                )}
+              </button>
+            </div>
 
             {/* View Toggle Buttons */}
-            <div className="flex items-center space-x-2 border-l border-gray-200 pl-4">
+            <div className="flex items-center space-x-1 sm:space-x-2 border-t sm:border-t-0 sm:border-l border-gray-200 pt-2 sm:pt-0 sm:pl-4">
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
                 title="List view"
               >
-                <svg className="h-5 w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
@@ -671,7 +676,7 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                 className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
                 title="Grid view"
               >
-                <svg className="h-5 w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
               </button>
@@ -680,7 +685,7 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                 className={`p-2 rounded-lg ${viewMode === 'table' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
                 title="Table view"
               >
-                <svg className="h-5 w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </button>
@@ -691,8 +696,8 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
 
       {/* Filter and Status Dropdowns */}
       {isFilterOpen && (
-        <div className="absolute right-0 mt-2 w-full max-w-xs sm:w-80 bg-white rounded-lg shadow-lg z-10 border border-gray-200">
-          <div className="p-4">
+        <div className="fixed sm:absolute top-0 left-0 right-0 sm:right-auto sm:top-auto sm:left-auto sm:mt-2 w-full sm:w-full sm:max-w-xs bg-white rounded-lg shadow-lg z-50 border border-gray-200 sm:rounded-lg">
+          <div className="p-4 max-h-[60vh] overflow-y-auto">
             <div className="mb-4">
               <h3 className="text-sm font-medium text-gray-900 mb-2">Article Type</h3>
               <div className="space-y-2">
@@ -704,7 +709,7 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                       onChange={() => toggleFilter('articleType', type)}
                       className="h-4 w-4 text-blue-600 rounded border-gray-300"
                     />
-                    <span className="ml-2 text-sm text-gray-700">{type}</span>
+                    <span className="ml-2 text-sm text-gray-700 truncate" title={type}>{type}</span>
                   </label>
                 ))}
               </div>
@@ -720,7 +725,7 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                       onChange={() => toggleFilter('gender', gender)}
                       className="h-4 w-4 text-blue-600 rounded border-gray-300"
                     />
-                    <span className="ml-2 text-sm text-gray-700">{gender}</span>
+                    <span className="ml-2 text-sm text-gray-700 truncate" title={gender}>{gender}</span>
                   </label>
                 ))}
               </div>
@@ -736,7 +741,7 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                       onChange={() => toggleFilter('colour', colour)}
                       className="h-4 w-4 text-blue-600 rounded border-gray-300"
                     />
-                    <span className="ml-2 text-sm text-gray-700">{colour}</span>
+                    <span className="ml-2 text-sm text-gray-700 truncate" title={colour}>{colour}</span>
                   </label>
                 ))}
               </div>
@@ -745,8 +750,8 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
         </div>
       )}
       {isStatusOpen && (
-        <div className="absolute right-0 mt-2 w-full max-w-xs sm:w-48 bg-white rounded-lg shadow-lg z-10 border border-gray-200">
-          <div className="p-2">
+        <div className="fixed sm:absolute top-0 left-0 right-0 sm:right-auto sm:top-auto sm:left-auto sm:mt-2 w-full sm:w-full sm:max-w-xs bg-white rounded-lg shadow-lg z-50 border border-gray-200 sm:rounded-lg">
+          <div className="p-2 max-h-[60vh] overflow-y-auto">
             {statuses.map(status => (
               <label key={status} className="flex items-center px-3 py-2 hover:bg-gray-50 rounded-lg">
                 <input
@@ -755,7 +760,7 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                   onChange={() => toggleStatus(status)}
                   className="h-4 w-4 text-blue-600 rounded border-gray-300"
                 />
-                <span className="ml-2 text-sm text-gray-700">{status}</span>
+                <span className="ml-2 text-sm text-gray-700 capitalize">{status}</span>
               </label>
             ))}
           </div>
@@ -778,72 +783,54 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
         )}
         {viewMode === 'table' && (
           <div className="w-full overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="w-8 px-6 py-3 bg-gray-50 border-b border-gray-200">
-                  <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Name</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Description</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Article Type</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Colour</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Fit</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Gender</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Print Technique</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Status</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredFiles.map((upload, index) => (
-                <tr 
-                  key={index} 
-                  className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => handleFileClick(upload)}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap" onClick={e => e.stopPropagation()}>
+            <div className="min-w-[800px]">
+              <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="w-8 px-3 sm:px-6 py-3 bg-gray-50 border-b border-gray-200">
                     <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{upload.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{upload.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{upload.articleType}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{upload.colour}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{upload.fit}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{upload.gender}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{upload.printTechnique}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(upload.status)}`}>
-                      {upload.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {upload.thumbnail?.url ? (
-                      <img 
-                        src={upload.thumbnail.url} 
-                        alt={`Thumbnail for ${upload.name || 'PDF'}`}
-                        className="max-w-full max-h-full object-contain"
-                        onError={(e) => {
-                          // Fallback to PDF icon if thumbnail fails to load
-                          e.target.onerror = null;
-                          e.target.src = '/pdf-icon.png';
-                        }}
-                      />
-                    ) : (
-                      <div className="text-gray-300">
-                        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    )}
-                  </td>
+                  </th>
+                  <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Name</th>
+                  <th scope="col" className="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Description</th>
+                  <th scope="col" className="hidden md:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Article Type</th>
+                  <th scope="col" className="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Colour</th>
+                  <th scope="col" className="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Fit</th>
+                  <th scope="col" className="hidden md:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Gender</th>
+                  <th scope="col" className="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Print Technique</th>
+                  <th scope="col" className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200">Status</th>
                 </tr>
-              ))}
-            </tbody>
-            </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredFiles.map((upload, index) => (
+                  <tr 
+                    key={index} 
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleFileClick(upload)}
+                  >
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                      <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                    </td>
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium max-w-[150px] truncate" title={upload.name}>{upload.name}</td>
+                    <td className="hidden sm:table-cell px-3 sm:px-6 py-4 text-sm text-gray-900 max-w-[200px] truncate" title={upload.description}>{upload.description}</td>
+                    <td className="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[120px] truncate" title={upload.articleType}>{upload.articleType}</td>
+                    <td className="hidden lg:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[100px] truncate" title={upload.colour}>{upload.colour}</td>
+                    <td className="hidden lg:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[80px] truncate" title={upload.fit}>{upload.fit}</td>
+                    <td className="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[100px] truncate" title={upload.gender}>{upload.gender}</td>
+                    <td className="hidden lg:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[120px] truncate" title={upload.printTechnique}>{upload.printTechnique}</td>
+                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(upload.status)}`}>
+                        {upload.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              </table>
+            </div>
           </div>
         )}
         {viewMode === 'grid' && (
-          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="p-3 sm:p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {filteredFiles.map((file, index) => (
               <div 
                 key={index} 
@@ -851,7 +838,7 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                 onClick={() => handleFileClick(file)}
               >
                 {/* PDF Preview Section (Inline PDF via pdf.js like Pantone Techpack tab) */}
-                <div className="bg-gray-50 relative h-72">
+                <div className="bg-gray-50 relative h-48 sm:h-56 md:h-64">
                   {(() => {
                     const url = getBestPdfUrl(file);
                     console.debug('[PastUploads][Grid] URL for inline PDF:', { id: file._id, url });
@@ -870,8 +857,8 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                           <noscript>
                             <iframe src={url} title={`PDF ${file.name || ''}`} className="w-full h-full border-0" />
                           </noscript>
-                          <div className="absolute bottom-1 left-0 right-0 text-center text-[11px] text-gray-500">
-                            Having trouble viewing the PDF?{' '}
+                          <div className="absolute bottom-1 left-0 right-0 text-center text-[10px] sm:text-[11px] text-gray-500 px-2">
+                            <span className="hidden sm:inline">Having trouble viewing the PDF? </span>
                             <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Open in new tab</a>
                           </div>
                         </>
@@ -893,11 +880,11 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                   })()}
                   {/* Status Badge - Positioned at top */}
                   <div className="absolute top-2 right-2">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(file.status)}`}>
+                    <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusClass(file.status)}`}>
                       {file.status}
                       {file.status === 'REJECTED' && (
-                        <span className="ml-2 text-red-800">
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <span className="ml-1 sm:ml-2 text-red-800">
+                          <svg className="h-3 w-3 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                           </svg>
                           0
@@ -906,75 +893,57 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                     </span>
                   </div>
                 </div>
-                {/* Thumbnail (only when no inline PDF URL available) */}
-                {(() => {
-                  const inlineUrl = getBestPdfUrl(file);
-                  if (inlineUrl) return null;
-                  return (
-                    <div className="h-48 bg-gray-50 flex items-center justify-center overflow-hidden">
-                      {file.thumbnail?.url ? (
-                        <img 
-                          src={file.thumbnail.url} 
-                          alt={`Thumbnail for ${file.name || 'PDF'}`}
-                          className="max-w-full max-h-full object-contain"
-                          onError={(e) => {
-                            // Fallback to PDF icon if thumbnail fails to load
-                            e.target.onerror = null;
-                            e.target.src = '/pdf-icon.png';
-                          }}
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center">
-                          <svg className="w-16 h-16 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                          </svg>
-                          <span className="text-sm text-gray-400">No preview available</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-                <div className="p-4">
+                <div className="p-3 sm:p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-medium text-gray-900 truncate">{file.name || 'Untitled'}</h3>
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(file.status)}`}>
+                    <h3 className="text-sm sm:text-lg font-medium text-gray-900 truncate pr-2" title={file.name || 'Untitled'}>{file.name || 'Untitled'}</h3>
+                    <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusClass(file.status)}`}>
                       {file.status}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
                     {file.articleType && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-xs text-gray-600">
-                        {file.articleType}
+                      <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-xs text-gray-600" title={`Article Type: ${file.articleType}`}>
+                        {file.articleType.length > 8 ? `${file.articleType.substring(0, 8)}...` : file.articleType}
                       </span>
                     )}
                     {file.colour && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-xs text-gray-600">
-                        {file.colour}
+                      <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-xs text-gray-600" title={`Colour: ${file.colour}`}>
+                        {file.colour.length > 8 ? `${file.colour.substring(0, 8)}...` : file.colour}
                       </span>
                     )}
                     {file.comments && file.comments.length > 0 && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-xs text-blue-700">
-                        <FaComment className="mr-1" />
-                        {file.comments.length} {file.comments.length === 1 ? 'Comment' : 'Comments'}
+                      <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-xs text-blue-700" title={`${file.comments.length} comments`}>
+                        <FaComment className="mr-1 h-3 w-3" />
+                        {file.comments.length}
                       </span>
                     )}
                   </div>
+                  {file.fit && (
+                    <div className="mt-2 text-xs text-gray-500 truncate" title={`Fit: ${file.fit}`}>
+                      Fit: {file.fit}
+                    </div>
+                  )}
+                  {file.gender && (
+                    <div className="mt-1 text-xs text-gray-500 truncate" title={`Gender: ${file.gender}`}>
+                      Gender: {file.gender}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
         {viewMode === 'list' && (
-          <div className="flex h-[calc(100vh-200px)] relative">
+          <div className="flex flex-col lg:flex-row h-[calc(100vh-200px)] relative">
             {/* Left: list of techpacks */}
-            <div className="w-1/3 overflow-y-auto border-r border-gray-200 pr-2">
+            <div className="w-full lg:w-1/3 xl:w-1/4 overflow-y-auto border-b lg:border-b-0 lg:border-r border-gray-200 pr-2 pb-4 lg:pb-0">
               <div className="divide-y divide-gray-200">
                 {filteredFiles.map((file, index) => {
                   const active = detailFile?._id === file._id;
                   return (
                     <div 
                       key={index}
-                      className={`px-4 py-3 cursor-pointer space-y-2 ${active ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'}`}
+                      className={`px-3 sm:px-4 py-3 cursor-pointer space-y-2 ${active ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'}`}
                       onClick={() => openInRightPane(file)}
                     >
                       <div className="flex justify-between items-center">
@@ -984,7 +953,20 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                       </div>
                       <div className="min-w-0 space-y-1">
                         <div className="text-xs text-gray-500 truncate">{file.articleType || '—'}</div>
-                        <div className="font-medium text-gray-900 truncate">{file.name || 'Untitled'}</div>
+                        <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{file.name || 'Untitled'}</div>
+                        {(file.colour || file.fit || file.gender) && (
+                          <div className="flex flex-wrap gap-1 text-xs text-gray-500">
+                            {file.colour && <span>• {file.colour}</span>}
+                            {file.fit && <span>• {file.fit}</span>}
+                            {file.gender && <span>• {file.gender}</span>}
+                          </div>
+                        )}
+                        {file.comments && file.comments.length > 0 && (
+                          <div className="flex items-center text-xs text-blue-600">
+                            <FaComment className="mr-1 h-3 w-3" />
+                            {file.comments.length} {file.comments.length === 1 ? 'Comment' : 'Comments'}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -993,14 +975,18 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
             </div>
 
             {/* Right: detail panel */}
-            <div className="w-2/3 overflow-y-auto p-4 absolute right-0 top-0 bottom-0 pr-8">
+            <div className="w-full lg:w-2/3 xl:w-3/4 overflow-y-auto p-3 sm:p-4 flex-1">
               {detailFile ? (
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
                   {/* Header */}
-                  <div className="flex items-start justify-between">
-                    <div className="min-w-0">
-                      <h2 className="text-xl font-semibold text-gray-900 truncate">{detailFile.name || 'Untitled'}</h2>
-                      <div className="text-sm text-gray-500">{detailFile.articleType || '—'} {detailFile.colour ? `• ${detailFile.colour}` : ''} {detailFile.fit ? `• ${detailFile.fit}` : ''}</div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">{detailFile.name || 'Untitled'}</h2>
+                      <div className="text-sm text-gray-500 mt-1">
+                        {detailFile.articleType || '—'}
+                        {detailFile.colour && ` • ${detailFile.colour}`}
+                        {detailFile.fit && ` • ${detailFile.fit}`}
+                      </div>
                       <div className="mt-2 flex gap-2 flex-wrap">
                         {detailFile.articleType && (<span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">{detailFile.articleType}</span>)}
                         {detailFile.colour && (<span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">{detailFile.colour}</span>)}
@@ -1009,26 +995,26 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                         {detailFile.printTechnique && (<span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">{detailFile.printTechnique}</span>)}
                       </div>
                     </div>
-                    <span className={`ml-3 px-3 py-1 rounded-full text-xs font-semibold ${getStatusClass(detailFile.status)}`}>{detailFile.status}</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusClass(detailFile.status)} whitespace-nowrap`}>{detailFile.status}</span>
                   </div>
 
                   {/* Preview */}
-                  <div className="mt-4 bg-gray-50 rounded border overflow-hidden" style={{ minHeight: '420px' }}>
+                  <div className="mt-4 bg-gray-50 rounded border overflow-hidden" style={{ minHeight: '320px' }}>
                     {(() => {
                       const url = getBestPdfUrl(detailFile);
                       if (url) {
                         return (
-                          <iframe src={url} title={`PDF ${detailFile.name || ''}`} className="w-full h-[520px] border-0" />
+                          <iframe src={url} title={`PDF ${detailFile.name || ''}`} className="w-full h-[420px] sm:h-[520px] border-0" />
                         );
                       }
                       return (
-                        <div className="w-full h-[520px] flex items-center justify-center text-gray-400">No preview available</div>
+                        <div className="w-full h-[420px] sm:h-[520px] flex items-center justify-center text-gray-400">No preview available</div>
                       );
                     })()}
                   </div>
 
                   {/* Description & Comments */}
-                  <div className="mt-4 grid grid-cols-2 gap-4">
+                  <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm font-medium text-gray-700 mb-1">Description</div>
                       <div className="px-3 py-2 bg-gray-50 rounded text-sm text-gray-900 min-h-[60px]">{detailFile.description || 'No description available'}</div>
@@ -1054,7 +1040,7 @@ const PastUploads = memo(({ setShowUploadForm, uploadedFiles: uploadedFilesProp,
                   </div>
                 </div>
               ) : (
-                <div className="text-gray-500">Select a tech pack from the list to view details</div>
+                <div className="text-gray-500 text-center py-8">Select a tech pack from the list to view details</div>
               )}
             </div>
           </div>

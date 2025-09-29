@@ -37,6 +37,8 @@ const PrintStrike = () => {
   const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'printStrikeNumber', direction: 'asc' });
+  const [selectedSeason, setSelectedSeason] = useState('SS 25');
+  const [isSeasonOpen, setIsSeasonOpen] = useState(false);
 
   // Get filtered and sorted records
   const getFilteredAndSortedRecords = useCallback(() => {
@@ -247,6 +249,48 @@ const PrintStrike = () => {
     };
   }, []);
 
+  // Get filtered and sorted manager groups
+  const getFilteredAndSortedManagerGroups = () => {
+    let filteredGroups = managerGroups;
+
+    // Filter by search term
+    if (search) {
+      filteredGroups = managerGroups.filter(group =>
+        group.manager.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Sort groups
+    return [...filteredGroups].sort((a, b) => {
+      if (sortConfig.key === 'count') {
+        if (sortConfig.direction === 'asc') {
+          return a.count - b.count;
+        } else {
+          return b.count - a.count;
+        }
+      }
+      if (sortConfig.key === 'manager') {
+        const aName = a.manager.toLowerCase();
+        const bName = b.manager.toLowerCase();
+        if (sortConfig.direction === 'asc') {
+          return aName.localeCompare(bName);
+        } else {
+          return bName.localeCompare(aName);
+        }
+      }
+      if (sortConfig.key === 'lastDate') {
+        const aDate = a.lastDate || '';
+        const bDate = b.lastDate || '';
+        if (sortConfig.direction === 'asc') {
+          return aDate.localeCompare(bDate);
+        } else {
+          return bDate.localeCompare(aDate);
+        }
+      }
+      return 0;
+    });
+  };
+
   const onDrop = useCallback(acceptedFiles => {
     setFiles(prevFiles => [...prevFiles, ...acceptedFiles]);
   }, []);
@@ -317,51 +361,80 @@ const PrintStrike = () => {
 
   const handleAddComment = async (text, inputRef) => {
     if (!text.trim() || !selectedRecord) return;
-
+    
     const user = 'Alex'; // TODO: replace with real user from auth
-
+    
     try {
+      // 1. Create and add optimistic comment
       const optimisticComment = createOptimisticComment(text, user);
-
-
-      // Optimistically update comments array directly
-      setSelectedRecord(prev => ({
-        ...prev,
-        comments: [...(prev.comments || []), optimisticComment]
-      }));
-      setManagerRecords(prev => prev.map(r =>
-        r._id === selectedRecord._id
-          ? { ...r, comments: [...(r.comments || []), optimisticComment] }
-          : r
-      ));
-
+      
+      // 2. Update UI optimistically
+      updateDocWithNewComment(
+        selectedRecord,
+        optimisticComment,
+        setSelectedRecord,
+        setManagerRecords
+      );
+      
+      // 3. Clear input
       if (inputRef) inputRef.value = '';
-
+      
       try {
-  const updatedRecord = await addCommentUtil(selectedRecord._id, null, text, user, 'printstrike');
-
+        // 4. Send to server
+        const response = await addCommentUtil(selectedRecord._id, null, text, user, 'printstrike');
+        
+        // 5. Update with server response
+        const serverComment = response.comment || response;
+        const updatedDoc = response.document || selectedRecord;
+        
+        // 6. Replace optimistic comment with server response
         setSelectedRecord(prev => ({
           ...prev,
-          comments: sortCommentsByDate([
-            ...(prev.comments || []).filter(c => c._id !== optimisticComment._id),
-            ...((updatedRecord.comments || []).slice(-1))
-          ])
+          comments: (prev.comments || []).map(c => 
+            c._id === optimisticComment._id 
+              ? { ...serverComment, isOptimistic: false } 
+              : c
+          )
         }));
-
-        setManagerRecords(prev => prev.map(r => r._id === selectedRecord._id ? { ...r, comments: updatedRecord.comments } : r));
-        setAllRecords(prev => prev.map(r => r._id === selectedRecord._id ? { ...r, comments: updatedRecord.comments } : r));
-
+        
+        // 7. Update manager records
+        setManagerRecords(prev => 
+          Array.isArray(prev) 
+            ? prev.map(r => 
+                r._id === selectedRecord._id 
+                  ? { ...r, comments: updatedDoc.comments || [] }
+                  : r
+              )
+            : prev
+        );
+        
+        // 8. Update all records
+        setAllRecords(prev => 
+          Array.isArray(prev) 
+            ? prev.map(r => 
+                r._id === selectedRecord._id 
+                  ? { ...r, comments: updatedDoc.comments || [] }
+                  : r
+              )
+            : prev
+        );
+        
       } catch (error) {
+        // 9. Revert on error
         setSelectedRecord(prev => ({
           ...prev,
           comments: (prev.comments || []).filter(c => c._id !== optimisticComment._id)
         }));
-        alert(error.message || 'Failed to add comment. Please try again.');
+        
+        // 10. Show error to user
+        console.error('Failed to save comment:', error);
+        alert(error.message || 'Failed to save comment. Please try again.');
       }
-
+      
     } catch (error) {
       console.error('Error in handleAddComment:', error);
-    }
+      alert('An unexpected error occurred. Please try again.');
+    }  
   };
 
   if (success) {
@@ -396,9 +469,15 @@ const PrintStrike = () => {
   if (selectedManager && managerRecords.length > 0) {
     return (
       <>
-        <Header />
         <div className="h-screen flex flex-col">
-          <div className="flex-none bg-white border-b border-gray-200"></div>
+          <div className="flex-none bg-white border-b border-gray-200">
+            <Header 
+              selectedSeason={selectedSeason}
+              onSeasonChange={setSelectedSeason}
+              isSeasonOpen={isSeasonOpen}
+              setIsSeasonOpen={setIsSeasonOpen}
+            />
+          </div>
           <div className="flex-1 overflow-auto bg-gray-50 p-6">
             <div className="flex items-center text-sm text-gray-500 mb-2">
               <button
@@ -459,9 +538,6 @@ const PrintStrike = () => {
                     </div>
                     {/* Right side icon buttons */}
                     <div className="flex items-center gap-2 ml-auto">
-                      <button className="p-2 rounded-md border border-gray-200 bg-yellow-400/70 hover:bg-yellow-400" title="Grid View" type="button">
-                        <svg className="w-5 h-5 text-gray-700" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 6v-6h6v6h-6z"/></svg>
-                      </button>
                       <button
                         className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-md bg-white text-blue-700 font-medium hover:bg-blue-50"
                         onClick={() => setShowCommentsSidebar(true)}
@@ -634,17 +710,34 @@ const PrintStrike = () => {
 
   return (
     <>
-      <Header />
-      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-              <div>
-                <h1 className="text-3xl font-bold mb-1">Print Strike</h1>
-                <p className="text-gray-500">Track the status and progress of Print Strike records</p>
-              </div>
+      <ManagerCommentsSidebar
+        open={showCommentsSidebar}
+        onClose={() => setShowCommentsSidebar(false)}
+        manager={selectedManager || selectedRecord?.manager}
+        records={allRecords}
+        type="Print Strike"
+        onRecordClick={(record) => {
+          setSelectedRecord(record);
+          setShowCommentsSidebar(false);
+        }}
+      />
+      <div className="h-screen flex flex-col">
+        <div className="flex-none bg-white border-b border-gray-200">
+          <Header 
+            selectedSeason={selectedSeason}
+            onSeasonChange={setSelectedSeason}
+            isSeasonOpen={isSeasonOpen}
+            setIsSeasonOpen={setIsSeasonOpen}
+          />
+        </div>
+        <div className="flex-1 overflow-auto bg-gray-50 p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-1">Print Strikes</h1>
+              <p className="text-gray-500">Track the status and progress of Print Strike records</p>
             </div>
-            
+          </div>
+          <div className="bg-white p-8 rounded-lg shadow-sm min-h-[60vh]">
             <div className="bg-gray-50 rounded-lg p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex-1 flex items-center bg-white rounded-md border border-gray-200 px-3 py-2">
                 <svg className="w-5 h-5 text-gray-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -658,85 +751,98 @@ const PrintStrike = () => {
                   onChange={e => setSearch(e.target.value)}
                 />
               </div>
-              <button className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-md bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M6 6h12M9 14h6" />
-                </svg>
-                <span className="hidden sm:inline">SORT</span>
-              </button>
+              <div className="relative">
+                <select
+                  className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={sortConfig.key}
+                  onChange={(e) => {
+                    let direction = 'asc';
+                    if (sortConfig.key === e.target.value && sortConfig.direction === 'asc') {
+                      direction = 'desc';
+                    }
+                    setSortConfig({ key: e.target.value, direction });
+                  }}
+                >
+                  <option value="count">Sort by Count</option>
+                  <option value="manager">Sort by Name</option>
+                  <option value="lastDate">Sort by Date</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {/* Manager cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {managerGroups
-                .filter(m => m.manager.toLowerCase().includes(search.toLowerCase()))
-                .map(m => (
-                  <div
-                    key={m.manager}
-                    className="bg-white rounded-lg shadow p-6 w-80 border border-gray-200 cursor-pointer hover:shadow-lg"
-                    onClick={() => {
-                      setSelectedManager(m.manager);
-                      const records = allRecords.filter((r) => r.manager === m.manager);
-                      setManagerRecords(records);
-                      setSelectedRecord(records[0]);
-                    }}
-                  >
-                    <div className="flex items-center mb-2">
-                      <div className="bg-blue-100 p-2 rounded-lg mr-2">
-                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                          <rect width="24" height="24" rx="12" fill="#e0e7ff"/>
-                          <rect x="7" y="7" width="10" height="10" rx="2" fill="#3b82f6"/>
-                          <rect x="9" y="9" width="6" height="6" rx="1" fill="#fff"/>
-                        </svg>
-                      </div>
-                      <div className="font-semibold text-lg">{m.manager} Sourcing Manager</div>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-500 mt-4">
-                      <div>
-                        <div className="font-semibold text-gray-700">PRINT STRIKES</div>
-                        <div>{m.count}</div>
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">LAST UPDATED</div>
-                        <div>{m.lastDate}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-            
-            {/* Image Preview Modal */}
-            {isImageModalOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-                <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full flex flex-col items-center relative">
-                  <button
-                    className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold"
-                    onClick={() => setIsImageModalOpen(false)}
-                    aria-label="Close"
-                  >
-                    &times;
-                  </button>
-                  {imageLoading && (
-                    <div className="flex items-center justify-center h-[80vh] w-full">
-                      <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v16a8 8 0 01-8-8z"></path>
+              {getFilteredAndSortedManagerGroups().map(m => (
+                <div
+                  key={m.manager}
+                  className="bg-white rounded-lg shadow p-6 w-80 border border-gray-200 cursor-pointer hover:shadow-lg"
+                  onClick={() => {
+                    setSelectedManager(m.manager);
+                    const records = allRecords.filter((r) => r.manager === m.manager);
+                    setManagerRecords(records);
+                    setSelectedRecord(records[0]);
+                  }}
+                >
+                  <div className="flex items-center mb-2">
+                    <div className="bg-blue-100 p-2 rounded-lg mr-2">
+                      <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <rect width="24" height="24" rx="12" fill="#e0e7ff"/>
+                        <rect x="7" y="7" width="10" height="10" rx="2" fill="#3b82f6"/>
+                        <rect x="9" y="9" width="6" height="6" rx="1" fill="#fff"/>
                       </svg>
                     </div>
-                  )}
-                  {!imageLoading && modalImageSrc && (
-                    <img 
-                      src={modalImageSrc} 
-                      alt="Preview" 
-                      className="max-h-[80vh] max-w-full object-contain"
-                      onLoad={() => setImageLoading(false)}
-                    />
-                  )}
+                    <div className="font-semibold text-lg">{m.manager} Sourcing Manager</div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-4">
+                    <div>
+                      <div className="font-semibold text-gray-700">PRINT STRIKES</div>
+                      <div>{m.count}</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-700">LAST UPDATED</div>
+                      <div>{m.lastDate}</div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         </div>
+        {/* Image Preview Modal */}
+        {isImageModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+            <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full flex flex-col items-center relative">
+              <button
+                className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold"
+                onClick={() => setIsImageModalOpen(false)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              {imageLoading && (
+                <div className="flex items-center justify-center h-[80vh] w-full">
+                  <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v16a8 8 0 01-8-8z"></path>
+                  </svg>
+                </div>
+              )}
+              {!imageLoading && modalImageSrc && (
+                <img 
+                  src={modalImageSrc} 
+                  alt="Preview" 
+                  className="max-h-[80vh] max-w-full object-contain"
+                  onLoad={() => setImageLoading(false)}
+                />
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -6,7 +6,7 @@ import pantoneColors from '../utils/pantoneColors.json';
 
 const PantoneLibrary = () => {
   // common header state
-  const [selectedSeasonHeader, setSelectedSeasonHeader] = useState('SS 25');
+  const [selectedSeason, setSelectedSeason] = useState('SS 25');
   const [isSeasonOpen, setIsSeasonOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -557,7 +557,12 @@ const PantoneLibrary = () => {
       // Always show Header at the top of upload steps
       return (
         <div className="min-h-screen bg-gray-50 p-8">
-          <Header />
+          <Header 
+            selectedSeason={selectedSeason}
+            onSeasonChange={setSelectedSeason}
+            isSeasonOpen={isSeasonOpen}
+            setIsSeasonOpen={setIsSeasonOpen}
+          />
           <div>
             {step === 1 && renderInputDetails()}
             {step === 2 && renderUploadFiles()}
@@ -568,104 +573,108 @@ const PantoneLibrary = () => {
       );
     }
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <Header />
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-semibold mb-1">Pantone Library</h1>
-            <p className="text-sm text-gray-500">View all Pantone's added by the designer</p>
-          </div>
-          <button
-            className="px-5 py-2 bg-blue-600 text-white rounded-md font-medium shadow hover:bg-blue-700 focus:outline-none"
-            onClick={() => {
-              setShowUploadForm(true);
-              setStep(1);
-            }}
-          >
-            Upload Pantone Library
-          </button>
+      <div className="h-screen flex flex-col">
+        <div className="flex-none bg-white border-b border-gray-200">
+          <Header
+            selectedSeason={selectedSeason}
+            onSeasonChange={setSelectedSeason}
+            isSeasonOpen={isSeasonOpen}
+            setIsSeasonOpen={setIsSeasonOpen}
+          />
         </div>
-        <div className="flex items-center justify-between mb-6">
-          <div className="relative flex-1 max-w-md">
-            <input
-              type="text"
-              placeholder="Search Vendors"
-              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+        <div className="flex-1 overflow-auto bg-gray-50 p-8">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-2xl font-semibold mb-1">Pantone Library</h1>
+              <p className="text-sm text-gray-500">View all Pantone's added by the designer</p>
             </div>
+            <button
+              className="px-5 py-2 bg-blue-600 text-white rounded-md font-medium shadow hover:bg-blue-700 focus:outline-none"
+              onClick={() => {
+                setShowUploadForm(true);
+                setStep(1);
+              }}
+            >
+              Upload Pantone Library
+            </button>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-            </svg>
-            SORT
-          </button>
-        </div>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="flex flex-col items-center text-gray-500">
-              <svg className="animate-spin h-10 w-10 text-blue-600" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-              </svg>
-              <span className="mt-3 text-sm">Loading Pantone Libraries...</span>
-            </div>
-          </div>
-        ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Object.entries(managerGroups).map(([manager, pantones]) => {
-            const filteredPantones = pantones.filter(p =>
-              (p.pantoneNumber || '').toLowerCase().includes(search.toLowerCase()) ||
-              (p.colorName || '').toLowerCase().includes(search.toLowerCase()) ||
-              (p.code || '').toLowerCase().includes(search.toLowerCase()) ||
-              (p.pantoneName || '').toLowerCase().includes(search.toLowerCase())
-            );
-            const totalPages = Math.ceil(filteredPantones.length / pageSize);
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            const currentPantones = filteredPantones.slice(startIndex, endIndex);
-            return (
-              <div
-                key={manager}
-                className="bg-white rounded-lg shadow p-6 flex flex-col cursor-pointer hover:shadow-lg border border-gray-200"
-                onClick={() => setSelectedManager(manager)}
-              >
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <div className="font-semibold text-lg">{manager}</div>
-                  </div>
-                </div>
-                <div className="flex justify-between text-sm text-gray-500 mt-2">
-                  <div>
-                    <div className="uppercase font-medium mb-1">TOTAL PANTONES</div>
-                    <div>{pantones.length}</div>
-                  </div>
-                  <div>
-                    <div className="uppercase font-medium mb-1">ADDED DATE</div>
-                    <div>10/02/2025</div>
-                  </div>
-                </div>
-                <div className="absolute top-4 right-4">
-                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
+          <div className="flex items-center justify-between mb-6">
+            <div className="relative flex-1 max-w-md">
+              <input
+                type="text"
+                placeholder="Search Vendors"
+                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
-            );
-          })}
+            </div>
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+              </svg>
+              SORT
+            </button>
+          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="flex flex-col items-center text-gray-500">
+                <svg className="animate-spin h-10 w-10 text-blue-600" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span className="mt-3 text-sm">Loading Pantone Libraries...</span>
+              </div>
+            </div>
+          ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.entries(managerGroups).map(([manager, pantones]) => {
+              const filteredPantones = pantones.filter(p =>
+                (p.pantoneNumber || '').toLowerCase().includes(search.toLowerCase()) ||
+                (p.colorName || '').toLowerCase().includes(search.toLowerCase()) ||
+                (p.code || '').toLowerCase().includes(search.toLowerCase()) ||
+                (p.pantoneName || '').toLowerCase().includes(search.toLowerCase())
+              );
+              const totalPages = Math.ceil(filteredPantones.length / pageSize);
+              const startIndex = (currentPage - 1) * pageSize;
+              const endIndex = startIndex + pageSize;
+              const currentPantones = filteredPantones.slice(startIndex, endIndex);
+              return (
+                <div
+                  key={manager}
+                  className="bg-white rounded-lg shadow p-6 flex flex-col cursor-pointer hover:shadow-lg border border-gray-200"
+                  onClick={() => setSelectedManager(manager)}
+                >
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <div className="font-semibold text-lg">{manager}</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-500 mt-2">
+                    <div>
+                      <div className="uppercase font-medium mb-1">TOTAL PANTONES</div>
+                      <div>{pantones.length}</div>
+                    </div>
+                    <div>
+                      <div className="uppercase font-medium mb-1">ADDED DATE</div>
+                      <div>10/02/2025</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          )}
         </div>
-        )}
       </div>
     );
   }
@@ -684,119 +693,128 @@ const PantoneLibrary = () => {
   const currentPantones = filteredPantones.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <Header />
-      {isLoading && (
-        <div className="flex items-center justify-center py-20">
-          <div className="flex flex-col items-center text-gray-500">
-            <svg className="animate-spin h-10 w-10 text-blue-600" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
-            <span className="mt-3 text-sm">Loading Pantone Libraries...</span>
+    <div className="h-screen flex flex-col">
+      <div className="flex-none bg-white border-b border-gray-200">
+        <Header
+          selectedSeason={selectedSeason}
+          onSeasonChange={setSelectedSeason}
+          isSeasonOpen={isSeasonOpen}
+          setIsSeasonOpen={setIsSeasonOpen}
+        />
+      </div>
+      <div className="flex-1 overflow-auto bg-gray-50 p-8">
+        {isLoading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center text-gray-500">
+              <svg className="animate-spin h-10 w-10 text-blue-600" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              <span className="mt-3 text-sm">Loading Pantone Libraries...</span>
+            </div>
+          </div>
+        )}
+        <div className="flex items-center mb-6">
+          <button
+            className="mr-4 px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 font-medium"
+            onClick={() => setSelectedManager(null)}
+          >
+            Back
+          </button>
+          <h1 className="text-3xl font-bold"> Pantone library</h1>
+        </div>
+        {/* Search, Filter, Status */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search Pantone.."
+              className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <button className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-md bg-white text-gray-700 font-medium">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M6 6h12M9 14h6" /></svg>
+              FILTER
+            </button>
+            <button className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-md bg-white text-gray-700 font-medium">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+              STATUS
+            </button>
           </div>
         </div>
-      )}
-      <div className="flex items-center mb-6">
-        <button
-          className="mr-4 px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 font-medium"
-          onClick={() => setSelectedManager(null)}
-        >
-          Back
-        </button>
-        <h1 className="text-3xl font-bold"> Pantone library</h1>
-      </div>
-      {/* Search, Filter, Status */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Search Pantone.."
-            className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-          <button className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-md bg-white text-gray-700 font-medium">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M6 6h12M9 14h6" /></svg>
-            FILTER
-          </button>
-          <button className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-md bg-white text-gray-700 font-medium">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-            STATUS
-          </button>
-        </div>
-      </div>
-      {/* Pantone Table */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pantone Number</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Color name</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Added by</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Season</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {currentPantones.map((p, idx) => (
-              <tr key={idx}>
-                <td className="px-4 py-2 whitespace-nowrap">{p.pantoneNumber || '-'}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{p.colorName || '-'}</td>
-                <td className="px-4 py-2 whitespace-nowrap">
-                  {(() => {
-                    const pantoneNum = p.pantoneNumber || p.code || '';
-                    const pantone = pantoneColors[pantoneNum];
-                    const hex = pantone ? pantone.hex : '#d1d5db';
-                    return (
-                      <span style={{ display: 'inline-block', width: 32, height: 24, background: hex, border: '1px solid #ccc', borderRadius: 4, verticalAlign: 'middle', marginRight: 8 }}></span>
-                    );
-                  })()}
-                  <span className="text-xs text-gray-500 align-middle">
+        {/* Pantone Table */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Pantone Number</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Color name</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Color</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Added by</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Season</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {currentPantones.map((p, idx) => (
+                <tr key={idx}>
+                  <td className="px-4 py-2 whitespace-nowrap">{p.pantoneNumber || '-'}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">{p.colorName || '-'}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">
                     {(() => {
                       const pantoneNum = p.pantoneNumber || p.code || '';
                       const pantone = pantoneColors[pantoneNum];
-                      return pantone ? pantone.hex : 'N/A';
+                      const hex = pantone ? pantone.hex : '#d1d5db';
+                      return (
+                        <span style={{ display: 'inline-block', width: 32, height: 24, background: hex, border: '1px solid #ccc', borderRadius: 4, verticalAlign: 'middle', marginRight: 8 }}></span>
+                      );
                     })()}
-                  </span>
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap">{p.addedBy || 'TONY'}</td>
-                <td className="px-4 py-2 whitespace-nowrap">{p.season || '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {/* Pagination Controls */}
-        <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center gap-2">
-            <span>Page Size</span>
-            <select
-              className="border border-gray-300 rounded px-2 py-1"
-              value={pageSize}
-              onChange={e => setPageSize(Number(e.target.value))}
-            >
-              {[10, 20, 50].map(size => (
-                <option key={size} value={size}>{size}</option>
+                    <span className="text-xs text-gray-500 align-middle">
+                      {(() => {
+                        const pantoneNum = p.pantoneNumber || p.code || '';
+                        const pantone = pantoneColors[pantoneNum];
+                        return pantone ? pantone.hex : 'N/A';
+                      })()}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">{p.addedBy || 'TONY'}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">{p.season || '-'}</td>
+                </tr>
               ))}
-            </select>
-          </div>
-          <div className="flex gap-2">
-            <button
-              className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 font-medium disabled:opacity-50"
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-            <button
-              className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 font-medium disabled:opacity-50"
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
+            </tbody>
+          </table>
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center gap-2">
+              <span>Page Size</span>
+              <select
+                className="border border-gray-300 rounded px-2 py-1"
+                value={pageSize}
+                onChange={e => setPageSize(Number(e.target.value))}
+              >
+                {[10, 20, 50].map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <button
+                className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 font-medium disabled:opacity-50"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <button
+                className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 font-medium disabled:opacity-50"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>

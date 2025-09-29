@@ -18,6 +18,7 @@ const LineSheets = () => {
   const [selectedHeaderSeason, setSelectedHeaderSeason] = useState('SS 25');
   const [isHeaderSeasonOpen, setIsHeaderSeasonOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: 'lineSheetFiles', direction: 'desc' });
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [showBrandManagerPage, setShowBrandManagerPage] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -48,6 +49,59 @@ const LineSheets = () => {
   const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000/api`;
   const PYTHON_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5001`;
   const AWS_REGION = 'ap-south-1'; // Default AWS region
+
+  // Handle sort request
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Get filtered and sorted brand managers
+  const getFilteredAndSortedManagers = () => {
+    let filteredManagers = brandManagersWithCounts;
+
+    // Filter by search term
+    if (searchQuery) {
+      filteredManagers = brandManagersWithCounts.filter(manager =>
+        manager.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Sort managers
+    return [...filteredManagers].sort((a, b) => {
+      if (sortConfig.key === 'lineSheetFiles') {
+        const aCount = parseInt(a.lineSheetFiles) || 0;
+        const bCount = parseInt(b.lineSheetFiles) || 0;
+        if (sortConfig.direction === 'asc') {
+          return aCount - bCount;
+        } else {
+          return bCount - aCount;
+        }
+      }
+      if (sortConfig.key === 'name') {
+        const aName = a.name.toLowerCase();
+        const bName = b.name.toLowerCase();
+        if (sortConfig.direction === 'asc') {
+          return aName.localeCompare(bName);
+        } else {
+          return bName.localeCompare(aName);
+        }
+      }
+      if (sortConfig.key === 'submittedOn') {
+        const aDate = a.submittedOn || '';
+        const bDate = b.submittedOn || '';
+        if (sortConfig.direction === 'asc') {
+          return aDate.localeCompare(bDate);
+        } else {
+          return bDate.localeCompare(aDate);
+        }
+      }
+      return 0;
+    });
+  };
 
   // Refs
   const fileInputRef = useRef(null);
@@ -1065,19 +1119,27 @@ const LineSheets = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <svg className="w-5 h-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0L8 8m4-4v12" />
-                </svg>
-                SORT
-              </button>
+              <div className="relative">
+                <select
+                  className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={sortConfig.key}
+                  onChange={(e) => requestSort(e.target.value)}
+                >
+                  <option value="lineSheetFiles">Sort by Count</option>
+                  <option value="name">Sort by Name</option>
+                  <option value="submittedOn">Sort by Date</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {/* Brand Manager Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {brandManagersWithCounts.filter(manager =>
-                manager.name.toLowerCase().includes(searchQuery.toLowerCase())
-              ).map((manager) => (
+              {getFilteredAndSortedManagers().map((manager) => (
                 <button
                   key={manager.id}
                   onClick={() => navigate(`/line-sheets/${manager.id}`)}

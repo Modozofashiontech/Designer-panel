@@ -38,6 +38,8 @@ const PreProduction = () => {
   const [allManagerComments, setAllManagerComments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
+  const [selectedSeason, setSelectedSeason] = useState('SS 25');
+  const [isSeasonOpen, setIsSeasonOpen] = useState(false);
   
   // Ensure selectedManager is set when opening the sidebar
   const openCommentsSidebar = () => {
@@ -449,9 +451,15 @@ const PreProduction = () => {
   if (selectedManager && managerRecords.length > 0) {
     return (
       <>
-        <Header />
         <div className="h-screen flex flex-col">
-          <div className="flex-none bg-white border-b border-gray-200"></div>
+          <div className="flex-none bg-white border-b border-gray-200">
+            <Header 
+              selectedSeason={selectedSeason}
+              onSeasonChange={setSelectedSeason}
+              isSeasonOpen={isSeasonOpen}
+              setIsSeasonOpen={setIsSeasonOpen}
+            />
+          </div>
           <div className="flex-1 overflow-auto bg-gray-50 p-6">
             <div className="flex items-center text-sm text-gray-500 mb-2">
               <button onClick={() => { setSelectedManager(null); setSelectedRecord(null); setIsImageModalOpen(false); setModalImageSrc(null); }} className="cursor-pointer hover:text-gray-700">All Sourcing managers</button>
@@ -479,7 +487,6 @@ const PreProduction = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-auto">
-                    <button className="p-2 rounded-md border border-gray-200 bg-yellow-400/70 hover:bg-yellow-400" title="Grid View" type="button"><svg className="w-5 h-5 text-gray-700" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 6v-6h6v6h-6z"/></svg></button>
                     <button className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-md bg-white text-blue-700 font-medium hover:bg-blue-50" onClick={openCommentsSidebar} type="button"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10a2 2 0 012-2h2M15 3h-4a2 2 0 00-2 2v3a2 2 0 002 2h4a2 2 0 002-2V5a2 2 0 00-2-2z" /></svg>View Comments</button>
                   </div>
                 </div>
@@ -550,105 +557,8 @@ const PreProduction = () => {
   }
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-sm min-h-[60vh]">
-      <Header />
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-        <div>
-          {selectedRecord ? (
-            <h1 className="text-3xl font-bold mb-1">
-              {`Pre-Production / ${selectedRecord.manager} Sourcing Manager`}
-            </h1>
-          ) : (
-            <>
-              <h1 className="text-3xl font-bold mb-1">Pre-Production</h1>
-              <p className="text-gray-500">Track the status and progress of Pre-Production samples</p>
-            </>
-          )}
-        </div>
-      </div>
-      <div className="bg-gray-50 rounded-lg p-4 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex-1 flex items-center bg-white rounded-md border border-gray-200 px-3 py-2">
-          <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"></path></svg>
-          <input
-            className="flex-1 outline-none bg-transparent"
-            type="text"
-            placeholder="Search Sourcing manager.."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-        <button className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-md bg-white text-gray-700 font-medium">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M6 6h12M9 14h6" /></svg>
-          SORT
-        </button>
-      </div>
-      
-      {/* Manager cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {managerGroups
-          .filter(m => m.manager.toLowerCase().includes(search.toLowerCase()))
-          .map(m => (
-            <div
-              key={m.manager}
-              className="bg-white rounded-lg shadow p-6 w-80 border border-gray-200 cursor-pointer hover:shadow-lg"
-              onClick={() => {
-                setSelectedManager(m.manager);
-                const records = allRecords.filter(r => r.manager === m.manager);
-                setManagerRecords(records);
-                setSelectedRecord(records[0]);
-              }}
-            >
-              <div className="flex items-center mb-2">
-                <div className="bg-blue-100 p-2 rounded-lg mr-2">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <rect width="24" height="24" rx="12" fill="#e0e7ff"/>
-                    <rect x="7" y="7" width="10" height="10" rx="2" fill="#3b82f6"/>
-                    <rect x="9" y="9" width="6" height="6" rx="1" fill="#fff"/>
-                  </svg>
-                </div>
-                <div className="font-semibold text-lg">{m.manager} Sourcing Manager</div>
-              </div>
-              <div className="flex justify-between text-xs text-gray-500 mt-4">
-                <div>
-                  <div className="font-semibold text-gray-700">PRE-PRODUCTION</div>
-                  <div>{m.count}</div>
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-700">LAST UPDATED</div>
-                  <div>{m.lastDate}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-      </div>
-      
-      {/* Image Preview Modal */}
-      {isImageModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-          <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full flex flex-col items-center relative">
-            <button
-              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold"
-              onClick={() => setIsImageModalOpen(false)}
-              aria-label="Close"
-            >
-              &times;
-            </button>
-            {imageLoading && (
-              <div className="flex items-center justify-center h-[80vh] w-full">
-                <span className="text-gray-400">Loading...</span>
-              </div>
-            )}
-            <img
-              src={modalImageSrc}
-              alt="Preview"
-              className="max-h-[80vh] w-auto object-contain rounded"
-              style={{ display: imageLoading ? 'none' : 'block' }}
-              onLoad={() => setImageLoading(false)}
-            />
-          </div>
-        </div>
-      )}
-            <ManagerCommentsSidebar
+    <>
+      <ManagerCommentsSidebar
         open={showCommentsSidebar}
         onClose={() => setShowCommentsSidebar(false)}
         manager={selectedManager || selectedRecord?.manager}
@@ -659,7 +569,126 @@ const PreProduction = () => {
           setShowCommentsSidebar(false);
         }}
       />
-    </div>
+      <div className="h-screen flex flex-col">
+        <div className="flex-none bg-white border-b border-gray-200">
+          <Header 
+            selectedSeason={selectedSeason}
+            onSeasonChange={setSelectedSeason}
+            isSeasonOpen={isSeasonOpen}
+            setIsSeasonOpen={setIsSeasonOpen}
+          />
+        </div>
+        <div className="flex-1 overflow-auto bg-gray-50 p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-1">Pre-Production</h1>
+              <p className="text-gray-500">Track the status and progress of Pre-Production samples</p>
+            </div>
+          </div>
+          <div className="bg-white p-8 rounded-lg shadow-sm min-h-[60vh]">
+            <div className="bg-gray-50 rounded-lg p-4 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex-1 flex items-center bg-white rounded-md border border-gray-200 px-3 py-2">
+                <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"></path>
+                </svg>
+                <input
+                  className="flex-1 outline-none bg-transparent"
+                  type="text"
+                  placeholder="Search Sourcing manager.."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="relative">
+                <select
+                  className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={sortConfig.key}
+                  onChange={(e) => {
+                    let direction = 'asc';
+                    if (sortConfig.key === e.target.value && sortConfig.direction === 'asc') {
+                      direction = 'desc';
+                    }
+                    setSortConfig({ key: e.target.value, direction });
+                  }}
+                >
+                  <option value="count">Sort by Count</option>
+                  <option value="manager">Sort by Name</option>
+                  <option value="lastDate">Sort by Date</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            {/* Manager cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {getSortedAndFilteredManagerGroups().map(m => (
+                <div
+                  key={m.manager}
+                  className="bg-white rounded-lg shadow p-6 w-80 border border-gray-200 cursor-pointer hover:shadow-lg"
+                  onClick={() => {
+                    setSelectedManager(m.manager);
+                    const records = allRecords.filter(r => r.manager === m.manager);
+                    setManagerRecords(records);
+                    setSelectedRecord(records[0]);
+                  }}
+                >
+                  <div className="flex items-center mb-2">
+                    <div className="bg-blue-100 p-2 rounded-lg mr-2">
+                      <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <rect width="24" height="24" rx="12" fill="#e0e7ff"/>
+                        <rect x="7" y="7" width="10" height="10" rx="2" fill="#3b82f6"/>
+                        <rect x="9" y="9" width="6" height="6" rx="1" fill="#fff"/>
+                      </svg>
+                    </div>
+                    <div className="font-semibold text-lg">{m.manager} Sourcing Manager</div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-4">
+                    <div>
+                      <div className="font-semibold text-gray-700">PRE-PRODUCTION</div>
+                      <div>{m.count}</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-700">LAST UPDATED</div>
+                      <div>{m.lastDate}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Image Preview Modal */}
+        {isImageModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+            <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full flex flex-col items-center relative">
+              <button
+                className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-2xl font-bold"
+                onClick={() => setIsImageModalOpen(false)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              {imageLoading && (
+                <div className="flex items-center justify-center h-[80vh] w-full">
+                  <span className="text-gray-400">Loading...</span>
+                </div>
+              )}
+              <img
+                src={modalImageSrc}
+                alt="Preview"
+                className="max-h-[80vh] w-auto object-contain rounded"
+                style={{ display: imageLoading ? 'none' : 'block' }}
+                onLoad={() => setImageLoading(false)}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 

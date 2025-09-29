@@ -19,6 +19,8 @@ const Pantone = () => {
   const [previewFile, setPreviewFile] = useState(null);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('pantone'); // 'pantone' or 'techpack'
+  const [selectedSeason, setSelectedSeason] = useState('SS 25');
+  const [isSeasonOpen, setIsSeasonOpen] = useState(false);
   const [techpacks, setTechpacks] = useState([]); // techpack list
   const [selectedTechpackDetail, setSelectedTechpackDetail] = useState(null); // full techpack
   const [showCommentsSidebar, setShowCommentsSidebar] = useState(false);
@@ -204,26 +206,61 @@ const Pantone = () => {
     };
   }, [fetchPantoneData, fetchTechpacks]);
 
-  // Fetch selected techpack details when Techpack tab is opened
+  // When user opens the Techpack tab, if the techpack isn't present in `techpacks`, try fetching it by id.
   useEffect(() => {
-    const id = selectedRecord?.selectedTechpack;
-    if (activeTab !== 'techpack' || !id) {
-      setSelectedTechpackDetail(null);
+    if (activeTab !== 'techpack' || !selectedRecord) return;
+
+    const raw = selectedRecord.selectedTechpack;
+    const id = typeof raw === 'string' ? raw : (raw && (raw._id || raw));
+    if (!id) return;
+
+    // Check if we already have this techpack in our state
+    const existingTechpack = techpacks.find(tp => tp._id === id) || selectedTechpackDetail;
+    if (existingTechpack) {
+      // Clear any previous selectedTechpackDetail if it's stale
+      if (selectedTechpackDetail && selectedTechpackDetail._id === id) {
+        setSelectedTechpackDetail(null);
+      }
       return;
     }
+
     let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/tech-packs/${id}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!cancelled) setSelectedTechpackDetail(data);
-      } catch (_) {
-        if (!cancelled) setSelectedTechpackDetail(null);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [activeTab, selectedRecord?.selectedTechpack]);
+
+    // First try the techpacks endpoint
+    fetch(`${API_BASE}/api/tech-packs/${id}`)
+      .then(res => {
+        if (cancelled) return;
+        if (res.ok) return res.json();
+        throw new Error('Techpack not found');
+      })
+      .then(data => {
+        if (cancelled || !data) return;
+        setSelectedTechpackDetail(data);
+        setTechpacks(prev => [...prev, data]);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // Fallback to the old endpoint if the first one fails
+        return fetch(`${API_BASE}/api/tech-packs/${id}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Not found');
+            return res.json();
+          })
+          .then(data => {
+            if (cancelled) return;
+            setSelectedTechpackDetail(data);
+            setTechpacks(prev => [...prev, data]);
+          })
+          .catch(error => {
+            console.error('Error fetching techpack:', error);
+            setSelectedTechpackDetail(null);
+          });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, selectedRecord, techpacks, selectedTechpackDetail]);
 
   // Effect to fetch and aggregate all comments for the selected manager
   useEffect(() => {
@@ -485,13 +522,6 @@ const Pantone = () => {
                   {/* Right side icon buttons */}
                   <div className="flex items-center gap-2 ml-auto">
                     <button
-                      className="p-2 rounded-md border border-gray-200 bg-yellow-400/70 hover:bg-yellow-400"
-                      title="Grid View"
-                      type="button"
-                    >
-                      <svg className="w-5 h-5 text-gray-700" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3h6v6H3V3zm8 0h6v6h-6V3zM3 11h6v6H3v-6zm8 6v-6h6v6h-6z"/></svg>
-                    </button>
-                    <button
                       className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-md bg-white text-blue-700 font-medium hover:bg-blue-50"
                       onClick={() => setShowCommentsSidebar(true)}
                       type="button"
@@ -614,12 +644,19 @@ const Pantone = () => {
                   )}
                   {activeTab === 'techpack' && (
                     (() => {
-                      const techpack = (selectedTechpackDetail) || techpacks.find(tp => tp._id === selectedRecord.selectedTechpack);
+                      // Helper: accept either a techpack id or an object and return the matching techpack
+                      const getTechpackFor = (selectedTechpack) => {
+                        if (!selectedTechpack) return null;
+                        const id = typeof selectedTechpack === 'string' ? selectedTechpack : (selectedTechpack._id || selectedTechpack);
+                        return techpacks.find(tp => tp._id === id) || (selectedTechpackDetail && selectedTechpackDetail._id === id ? selectedTechpackDetail : null);
+                      };
+
+                      const techpack = getTechpackFor(selectedRecord.selectedTechpack);
                       if (!techpack) {
                         return (
-                          <div className="p-8 text-center text-gray-400">
-                            <div className="text-lg font-semibold mb-2">Techpack Details</div>
-                            <div>No techpack details found.</div>
+                          <div className="flex flex-col items-center justify-center p-8 text-gray-500">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
+                            <p>Loading techpack details...</p>
                           </div>
                         );
                       }
@@ -685,7 +722,7 @@ const Pantone = () => {
                               <CommentSection
                                 recordId={selectedRecord._id}
                                 file={selectedRecord}
-                                endpoint="pantone"
+                                endpoint="Pantone"
                               />
                             </div>
                           </div>
@@ -729,7 +766,12 @@ const Pantone = () => {
       />
       <div className="h-screen flex flex-col">
         <div className="flex-none bg-white border-b border-gray-200">
-          <Header />
+          <Header 
+            selectedSeason={selectedSeason}
+            onSeasonChange={setSelectedSeason}
+            isSeasonOpen={isSeasonOpen}
+            setIsSeasonOpen={setIsSeasonOpen}
+          />
         </div>
       <div className="flex-1 overflow-auto bg-gray-50 p-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
@@ -752,10 +794,28 @@ const Pantone = () => {
                 className="flex-1 outline-none bg-transparent"
               />
             </div>
-            <button className="flex items-center gap-1 px-4 py-2 border border-gray-200 rounded-md bg-white text-gray-700 font-medium">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M6 6h12M9 14h6" /></svg>
-              SORT
-            </button>
+            <div className="relative">
+              <select
+                className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                value={sortConfig.key}
+                onChange={(e) => {
+                  let direction = 'asc';
+                  if (sortConfig.key === e.target.value && sortConfig.direction === 'asc') {
+                    direction = 'desc';
+                  }
+                  setSortConfig({ key: e.target.value, direction });
+                }}
+              >
+                <option value="count">Sort by Count</option>
+                <option value="manager">Sort by Name</option>
+                <option value="lastDate">Sort by Date</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           {/* Manager Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
