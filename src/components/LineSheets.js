@@ -7,6 +7,7 @@ import BrandManagerSelection from './BrandManagerSelection';
 import * as pdfjsLib from 'pdfjs-dist';
 import AiHelpBot from './AiHelpBot';
 import axios from 'axios';
+import { API_BASE } from '../config';
 import ManagerCard from './ManagerCard';
 
 // Set worker path for PDF.js
@@ -46,8 +47,8 @@ const LineSheets = () => {
   const [isHelpBotOpen, setIsHelpBotOpen] = useState(false);
   const [uploadedSheets, setUploadedSheets] = useState([]);
   const [brandManagers, setBrandManagers] = useState([]);
-  const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000/api`;
-  const PYTHON_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5001`;
+  const API_BASE_URL = `${API_BASE}/api`;
+  const PYTHON_BASE_URL = `${API_BASE.replace(/\/api$/, '')}:5001`;
   const AWS_REGION = 'ap-south-1'; // Default AWS region
 
   // Handle sort request

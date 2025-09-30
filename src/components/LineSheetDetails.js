@@ -19,7 +19,7 @@ import {
 const LineSheetDetails = () => {
   const navigate = useNavigate();
   const { managerId } = useParams();
-  const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000/api`;
+  const API_BASE_URL = `${API_BASE}/api`;
   const { updatePDFStatus } = useSharedPDFs();
   const [uploadedSheets, setUploadedSheets] = useState([]);
   const [selectedHeaderSeason, setSelectedHeaderSeason] = useState('SS 25');
@@ -56,7 +56,7 @@ const LineSheetDetails = () => {
     const cleanFolder = folder ? `${folder.replace(/^\/+|\/+$/g, '')}` : '';
     
     // Build the URL with folder parameter if provided
-    const url = new URL(`${API_BASE_URL}/file/${encodeURIComponent(cleanKey)}`);
+    const url = new URL(`/api/file/${encodeURIComponent(cleanKey)}`, API_BASE);
     if (cleanFolder) {
       url.searchParams.append('folder', cleanFolder);
     }

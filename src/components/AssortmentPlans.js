@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Header from './Header';
 import ManagerCard from './ManagerCard';
+import { API_BASE } from '../config';
 
-const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000/api`;
+const API_BASE_URL = `${API_BASE}/api`;
 
 const AssortmentPlans = () => {
   const [selectedHeaderSeason, setSelectedHeaderSeason] = useState('All');

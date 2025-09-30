@@ -23,7 +23,7 @@ const DashboardContent = () => {
         
         // Create an axios instance with base URL
         const api = axios.create({
-          baseURL: 'http://localhost:5000' // Update this with your actual backend URL if different
+          baseURL: 'http://localhost:8080' // Update this with your actual backend URL if different
         });
         
         // Fetch data in parallel
