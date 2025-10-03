@@ -488,7 +488,7 @@ const TechPackGenerator = ({ lineSheet, allLineSheets, onClose }) => {
                             <div key={index} style={{ textAlign: 'center' }}>
                               <div style={{ fontWeight: 'bold', fontSize: 10 }}>{swatch.code || `S${index + 1}`}</div>
                               <img 
-                                src={`http://localhost:5001${swatch.imageUrl || swatch.url || swatch}`} 
+                                src={`${API_BASE.replace('/api', '')}${swatch.imageUrl || swatch.url || swatch}`} 
                                 alt={swatch.code || `Swatch ${index + 1}`} 
                                 style={{ 
                                   width: 32, 
@@ -508,7 +508,7 @@ const TechPackGenerator = ({ lineSheet, allLineSheets, onClose }) => {
                             <div key={index} style={{ textAlign: 'center' }}>
                               <div style={{ fontWeight: 'bold', fontSize: 10 }}>{pantone.code || `P${index + 1}`}</div>
                               <img 
-                                src={`http://localhost:5001${pantone.imageUrl || pantone.url}`} 
+                                src={`${API_BASE.replace('/api', '')}${pantone.imageUrl || pantone.url}`} 
                                 alt={pantone.code || `Pantone ${index + 1}`} 
                                 style={{ 
                                   width: 32, 

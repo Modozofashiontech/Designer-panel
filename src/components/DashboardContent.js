@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE } from '../config';
 
 const DashboardContent = () => {
   const [statusFilter, setStatusFilter] = useState('TECH-PACKS');
@@ -23,7 +24,7 @@ const DashboardContent = () => {
         
         // Create an axios instance with base URL
         const api = axios.create({
-          baseURL: 'http://localhost:8080' // Update this with your actual backend URL if different
+          baseURL: API_BASE
         });
         
         // Fetch data in parallel
