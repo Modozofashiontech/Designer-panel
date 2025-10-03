@@ -517,6 +517,10 @@ const uploadToS3 = async (file, key) => {
 
 const app = express();
 
+// Serve static files from the frontend build directory
+const frontendBuildPath = path.join(__dirname, '../frontend/build');
+app.use(express.static(frontendBuildPath, { dotfiles: 'ignore' }));
+
 // Parse JSON request bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -524,14 +528,11 @@ app.use(express.urlencoded({ extended: true }));
 // Security: block access to dotfiles (e.g., .env) anywhere
 app.use((req, res, next) => {
   const requestedPath = req.path || '';
-  if (/\/(?:\.|%2e)/i.test(requestedPath) || requestedPath.startsWith('/.')) {
+  if (/(?:\.|%2e)/i.test(requestedPath) || requestedPath.startsWith('/.')) {
     return res.status(404).end();
   }
   next();
 });
-
-// Serve static files from the public directory (dotfiles not served by default)
-app.use(express.static(path.join(__dirname, '../public'), { dotfiles: 'ignore' }));
 
 // Configure CORS for all routes
 app.use(cors({
@@ -2852,16 +2853,20 @@ app.get('/api/file/:key(*)', async (req, res) => {
   }
 });
 
-
-
-
-const PORT = process.env.PORT; // DigitalOcean App Platform assigns this port
-server.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
-})
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error handling middleware:', err);
   res.status(500).json({ error: 'Internal Server Error' });
+});
+
+// Handle React routing, return all requests to React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendBuildPath, 'index.html'));
+});
+
+// Start the server
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Frontend build path: ${frontendBuildPath}`);
 });
