@@ -553,29 +553,6 @@ const io = new Server(server, {
   cookie: config.security.socket.cookie
 });
 
-// Handle socket connections
-io.on('connection', (socket) => {
-  // connection established
-
-  // Handle joining rooms
-  socket.on('join_room', (roomId) => {
-    socket.join(roomId);
-  });
-
-  // Handle leaving rooms
-  socket.on('leave_room', (roomId) => {
-    socket.leave(roomId);
-  });
-
-  socket.on('disconnect', () => {
-    // disconnected
-  });
-
-  socket.on('error', (error) => {
-    console.error('Socket error:', error);
-  });
-});
-
 // Middleware
 app.use(cors({
   origin: '*',
@@ -2872,7 +2849,7 @@ app.get('/api/file/:key(*)', async (req, res) => {
 
 
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT; // DigitalOcean App Platform assigns this port
 server.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 })
