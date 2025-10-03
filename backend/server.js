@@ -35,9 +35,15 @@ const config = {
 };
 
 // Silence noisy logging and timers globally to improve performance during bulk uploads.
-// Keep console.error for critical failures.
+// Keep console.error for critical failures and MongoDB connection message
 const __noop = () => {};
-console.log = __noop;
+const originalConsoleLog = console.log;
+console.log = (...args) => {
+  // Allow MongoDB connection message to pass through
+  if (args[0] && args[0].includes('MongoDB connected')) {
+    originalConsoleLog(...args);
+  }
+};
 console.info = __noop;
 console.debug = __noop;
 console.warn = __noop;
