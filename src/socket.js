@@ -2,10 +2,9 @@
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from './config';
 
-// Use the configured socket URL (falls back to localhost:8080 for development)
-// DigitalOcean App Platform uses default Socket.IO path, no custom /ws path needed
+// Use the configured socket URL (automatically converts http/https to ws/wss)
+// DigitalOcean App Platform uses default Socket.IO path
 const socket = io(SOCKET_URL, {
-  // Remove custom path - DigitalOcean App Platform doesn't support custom WebSocket paths
   reconnection: true,
   reconnectionAttempts: 10,
   reconnectionDelay: 1000,
