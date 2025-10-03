@@ -1,5 +1,18 @@
+// Core Node.js modules
+const path = require('path');
+const fs = require('fs');
+const http = require('http');
+
+// Third-party modules
 require('dotenv').config();
 const express = require('express');
+const { Server } = require('socket.io');
+const cors = require('cors');
+const { ObjectId } = require('mongodb');
+const { v4: uuidv4 } = require('uuid');
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const multer = require('multer');
 
 // Load environment variables with defaults
 const config = {
@@ -58,13 +71,20 @@ if (missingVars.length > 0) {
   console.error(`❌ Missing required environment variables: ${missingVars.join(', ')}`);
   process.exit(1);
 }
+
+// MongoDB models and other application-specific requires
 const mongoose = require('mongoose');
-const multer = require('multer');
-const cors = require('cors');
-const http = require('http');
-const { Server } = require('socket.io');
-const path = require('path');
-const { Techpack, AssortmentPlan, BrandManager, LineSheet, Pantone, PrintStrike, PreProduction, DevelopmentSample, PantoneLibrary } = require('./models/Document');
+const { 
+  Techpack, 
+  LineSheet, 
+  BrandManager, 
+  PrintStrike, 
+  AssortmentPlan, 
+  Pantone, 
+  PreProduction, 
+  DevelopmentSample, 
+  PantoneLibrary 
+} = require('./models/Document');
 
 // Helper function to ensure S3 URLs are properly formatted and accessible
 const ensureSecureS3Url = (url) => {
@@ -120,11 +140,7 @@ const ensureSecureS3Url = (url) => {
     return url; // Return original URL if there's an error
   }
 };
-const { ObjectId } = require('mongodb');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
-const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+
 const pdf = require('pdf-parse');
 
 // Enhanced function to extract specific fields from tech pack PDFs
@@ -515,11 +531,31 @@ const uploadToS3 = async (file, key) => {
   }
 };
 
+// Initialize Express app
 const app = express();
 
 // Serve static files from the frontend build directory
-const frontendBuildPath = path.join(__dirname, '../frontend/build');
-app.use(express.static(frontendBuildPath, { dotfiles: 'ignore' }));
+const frontendBuildPath = path.resolve(__dirname, '../frontend/build');
+
+// Log the current working directory and frontend build path for debugging
+console.log('Current working directory:', process.cwd());
+console.log('Frontend build path:', frontendBuildPath);
+console.log('Directory exists:', fs.existsSync(frontendBuildPath));
+
+// Serve static files with proper configuration
+if (fs.existsSync(frontendBuildPath)) {
+  console.log('Serving static files from:', frontendBuildPath);
+  app.use(express.static(frontendBuildPath, {
+    dotfiles: 'ignore',
+    etag: true,
+    extensions: ['html', 'js', 'css', 'json', 'png', 'jpg', 'jpeg', 'gif', 'svg'],
+    index: false,
+    maxAge: '1d',
+    redirect: false
+  }));
+} else {
+  console.error('Frontend build not found at:', frontendBuildPath);
+}
 
 // Parse JSON request bodies
 app.use(express.json());
@@ -2744,85 +2780,94 @@ const getContentType = (key) => {
   return types[ext] || types.default;
 };
 
-// Serve files from S3 with proper content types and caching
-// This endpoint handles both /api/file/... and /file/... to prevent double /api issues
-app.get('/api/file/:key(*)', async (req, res) => {
-  try {
-    const { key } = req.params;
-    const { folder } = req.query;
-    
-    if (!key) {
-      return res.status(400).json({ error: 'File key is required' });
-    }
-    
-    // Decode the key in case it was URL-encoded
-    const decodedKey = decodeURIComponent(key);
-    
-    // If folder is provided, prepend it to the key
-    const fullKey = folder ? `${folder.replace(/\/+$/, '')}/${decodedKey.replace(/^\/+/, '')}` : decodedKey;
-    
-    // Determine content type based on file extension
-    const contentType = getContentType(decodedKey);
-    
-    // Set CORS headers to allow access from any origin
-    res.set('Access-Control-Allow-Origin', '*');
-    
-    // Set cache control headers (1 day for images, 1 hour for other files)
-    const isImage = contentType.startsWith('image/');
-    res.set('Cache-Control', `public, max-age=${isImage ? 86400 : 3600}`);
-    res.set('Content-Type', contentType);
-    
-    // For images, allow embedding and set proper disposition
-    if (isImage) {
-      res.set('X-Content-Type-Options', 'nosniff');
-      res.set('Content-Disposition', 'inline');
-    }
-    // For PDFs, allow embedding and set proper disposition
-    else if (contentType === 'application/pdf') {
-      res.set('X-Content-Type-Options', 'nosniff');
-      res.set('Content-Disposition', `inline; filename="${decodedKey.split('/').pop()}"`);
-    }
-    
-    // Get the bucket name from environment variables
-    const bucket = process.env.AWS_S3_BUCKET_NAME || process.env.S3_BUCKET_NAME || 'mozodo-data-storage';
-    if (!bucket) {
-      throw new Error('S3 bucket name is not configured');
-    }
-    
-    console.log(`Serving file from S3: ${fullKey} from bucket ${bucket}`);
-    
-    // Create a command to get the S3 object
-    const command = new GetObjectCommand({
-      Bucket: bucket,
-      Key: fullKey,
-      ResponseContentType: contentType,
-      ResponseContentDisposition: `inline; filename="${decodedKey.split('/').pop()}"`
-    });
-    
-    // Get the S3 object
-    const { Body } = await s3Client.send(command);
-    
-    // Stream the file directly from S3
-    Body.pipe(res);
-    
-    // Handle stream errors
+// Helper function to stream file from S3
+const streamFileFromS3 = async (res, key, folder = '') => {
+  if (!key) {
+    throw new Error('File key is required');
+  }
+  
+  // Ensure the key is a string and trim any extra slashes
+  const cleanKey = String(key).trim();
+  
+  // If folder is provided, prepend it to the key
+  const fullKey = folder 
+    ? `${String(folder).replace(/^\/+|\/+$/g, '')}/${cleanKey.replace(/^\/+|\/+$/g, '')}`
+    : cleanKey;
+  
+  // Determine content type based on file extension
+  const contentType = getContentType(decodedKey);
+  const filename = decodedKey.split('/').pop();
+  
+  // Get the bucket name from environment variables
+  const bucket = process.env.AWS_S3_BUCKET_NAME || process.env.S3_BUCKET_NAME || 'mozodo-data-storage';
+  if (!bucket) {
+    throw new Error('S3 bucket name is not configured');
+  }
+  
+  // Log the final S3 key and bucket for debugging
+  console.log('S3 request:', { bucket, fullKey });
+  
+  console.log(`Serving file from S3: ${fullKey} from bucket ${bucket}`);
+  
+  // Create a command to get the S3 object
+  const command = new GetObjectCommand({
+    Bucket: bucket,
+    Key: fullKey,
+    ResponseContentType: contentType,
+    ResponseContentDisposition: `inline; filename="${filename}"`
+  });
+  
+  // Get the S3 object
+  const { Body } = await s3Client.send(command);
+  
+  // Set headers
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Cache-Control', 'public, max-age=31536000'); // 1 year cache for static assets
+  res.set('Content-Type', contentType);
+  res.set('X-Content-Type-Options', 'nosniff');
+  
+  // For PDFs, set proper content disposition
+  if (contentType === 'application/pdf') {
+    res.set('Content-Disposition', `inline; filename="${filename}"`);
+  }
+  
+  // Stream the file directly from S3
+  Body.pipe(res);
+  
+  return new Promise((resolve, reject) => {
     Body.on('error', (err) => {
       console.error('Error streaming file from S3:', {
         error: err.message,
         bucket,
-        key: fullKey,
-        originalKey: key,
-        folder
+        key: fullKey
       });
-      
       if (!res.headersSent) {
-        res.status(500).json({ 
-          error: 'Error streaming file',
-          details: process.env.NODE_ENV === 'development' ? err.message : undefined
-        });
+        res.status(500).json({ error: 'Error streaming file' });
       }
+      reject(err);
     });
     
+    res.on('finish', resolve);
+  });
+};
+
+// Serve files from S3 with proper content types and caching
+app.get('/api/file/:key(*)', async (req, res) => {
+  try {
+    let { key } = req.params;
+    const { folder } = req.query;
+    
+    // Log the incoming request for debugging
+    console.log('File request received:', { 
+      originalKey: key,
+      decodedKey: decodeURIComponent(key),
+      folder 
+    });
+    
+    // Ensure the key is properly decoded
+    key = decodeURIComponent(key);
+    
+    await streamFileFromS3(res, key, folder);
   } catch (error) {
     console.error('Error serving file:', {
       error: error.message,
@@ -2830,6 +2875,8 @@ app.get('/api/file/:key(*)', async (req, res) => {
       key: req.params.key,
       folder: req.query.folder
     });
+    
+    if (res.headersSent) return;
     
     // Handle specific AWS errors
     if (error.name === 'NoSuchKey' || error.code === 'NoSuchKey') {
@@ -2846,6 +2893,7 @@ app.get('/api/file/:key(*)', async (req, res) => {
       });
     }
     
+    // Handle other errors
     res.status(500).json({ 
       error: 'Failed to retrieve file',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -2853,20 +2901,49 @@ app.get('/api/file/:key(*)', async (req, res) => {
   }
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error handling middleware:', err);
-  res.status(500).json({ error: 'Internal Server Error' });
-});
-
-// Handle React routing, return all requests to React app
+// Catch-all route to serve the React app
 app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendBuildPath, 'index.html'));
+  if (fs.existsSync(frontendBuildPath)) {
+    const indexPath = path.join(frontendBuildPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      console.error('index.html not found in:', frontendBuildPath);
+      res.status(500).send(`
+        <h1>Frontend Build Error</h1>
+        <p>index.html not found in: ${frontendBuildPath}</p>
+        <p>Please run: <code>cd frontend && npm run build</code></p>
+      `);
+    }
+  } else {
+    console.error('Frontend build not found at:', frontendBuildPath);
+    res.status(500).send(`
+      <h1>Frontend Build Missing</h1>
+      <p>Frontend build not found at: ${frontendBuildPath}</p>
+      <p>Please build the frontend first by running:</p>
+      <pre>cd frontend && npm run build</pre>
+      <p>Current working directory: ${process.cwd()}</p>
+    `);
+  }
 });
 
-// Start the server
+// The server is already created with http.createServer(app) earlier
+// Update the server.listen call to use the existing server instance
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Frontend build path: ${frontendBuildPath}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Frontend path: ${frontendBuildPath}`);
+  console.log(`Frontend build exists: ${fs.existsSync(frontendBuildPath)}`);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  // Only call server.close if the server is running
+  if (server && typeof server.close === 'function') {
+    server.close(() => process.exit(1));
+  } else {
+    process.exit(1);
+  }
 });
